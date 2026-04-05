@@ -1,11 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ChartsSection } from './components/ChartsSection'
+import { ExportPanel } from './components/ExportPanel'
 import { RecordList } from './components/RecordList'
 import { RecordModal } from './components/RecordModal'
 import { ScoreForm } from './components/ScoreForm'
 import { SummaryCards } from './components/SummaryCards'
 import type { ScoreRecord } from './types'
-import { getDistributionSeries, getSummary, getTrendSeries, sortByRecordedAtDesc } from './utils/analytics'
+import {
+  getDistributionSeries,
+  getSummary,
+  getTrendSeries,
+  sortByRecordedAtDesc,
+} from './utils/analytics'
 import { loadRecords, saveRecords } from './utils/storage'
 
 function createRecord(input: Omit<ScoreRecord, 'id' | 'createdAt'>): ScoreRecord {
@@ -51,16 +57,19 @@ function App() {
 
       <main className="dashboard">
         <ScoreForm onSubmit={handleAddRecord} />
+
         <section className="panel insights-panel">
           <div className="section-heading">
             <p className="eyebrow">Snapshot</p>
             <h2>分數總覽</h2>
             <p className="section-copy">
-              用最少的資訊先抓到整體節奏，再往下看圖表與個別紀錄。
+              用最少的資訊先抓到整體節奏，再往下看圖表、紀錄與完整匯出。
             </p>
           </div>
           <SummaryCards summary={summary} />
+          <ExportPanel records={records} />
         </section>
+
         <ChartsSection distributionData={distributionData} trendData={trendData} />
         <RecordList records={records} onDelete={handleDelete} onSelect={setSelectedRecord} />
       </main>
