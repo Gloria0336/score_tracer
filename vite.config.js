@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 function withTrailingSlash(value) {
@@ -10,11 +11,19 @@ function resolveBasePath() {
         var normalized = explicitBase.startsWith('/') ? explicitBase : "/".concat(explicitBase);
         return withTrailingSlash(normalized);
     }
-    if (process.env.GITHUB_ACTIONS === 'true') {
-        var repositoryName = (_b = process.env.GITHUB_REPOSITORY) === null || _b === void 0 ? void 0 : _b.split('/')[1];
-        if (repositoryName) {
-            return "/".concat(repositoryName, "/");
+    var repositoryName = (_b = process.env.GITHUB_REPOSITORY) === null || _b === void 0 ? void 0 : _b.split('/')[1];
+    if (repositoryName) {
+        return "/".concat(repositoryName, "/");
+    }
+    try {
+        var packageJson = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
+        if (packageJson.homepage) {
+            var homepagePath = new URL(packageJson.homepage).pathname;
+            return withTrailingSlash(homepagePath === '/' ? '/' : homepagePath);
         }
+    }
+    catch (_c) {
+        return '/';
     }
     return '/';
 }

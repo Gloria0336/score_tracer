@@ -9,20 +9,42 @@ npm install
 npm run dev
 ```
 
-## GitHub Pages Deployment
+## Build
 
-這個專案已經設定好 GitHub Pages 自動部署流程。
+```bash
+npm run build
+```
 
-1. 把專案推到 GitHub 的 `main` 分支。
-2. 到 GitHub repository 的 `Settings` -> `Pages`。
-3. 在 `Build and deployment` 的 `Source` 選擇 `GitHub Actions`。
-4. 之後每次 push 到 `main`，GitHub Actions 都會自動重新部署。
+## Deploy to `gh-pages`
 
-### Base Path
+這個專案已經改成 `gh-pages` 分支發布模式，有兩種用法：
 
-- 在 GitHub Actions 裡，Vite 會自動使用 repository 名稱作為 base path。
-- 目前你的遠端倉庫是 `score_tracer`，所以正式網址會是：
+### 1. 本機手動發布
+
+```bash
+npm run deploy
+```
+
+這會先執行 build，再把 `dist` 內容推到 `gh-pages` 分支。
+
+### 2. GitHub 自動發布
+
+- 專案已包含 [`.github/workflows/deploy-gh-pages.yml`](./.github/workflows/deploy-gh-pages.yml)
+- 每次 push 到 `main`，GitHub Actions 都會自動 build、test，然後更新 `gh-pages` 分支
+
+## GitHub Pages Setting
+
+在 GitHub repository 的 `Settings -> Pages`：
+
+- `Source` 選 `Deploy from a branch`
+- `Branch` 選 `gh-pages`
+- Folder 選 `/ (root)`
+
+設定完成後，網站網址會是：
 
 `https://gloria0336.github.io/score_tracer/`
 
-- 本機開發時則仍然使用 `/`，不影響 `npm run dev`。
+## Base Path
+
+- Vite 會自動使用 repository 名稱 `score_tracer` 作為正式部署的 base path
+- 本機 `npm run dev` 仍然維持正常開發模式

@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 
@@ -12,11 +13,22 @@ function resolveBasePath() {
     return withTrailingSlash(normalized)
   }
 
-  if (process.env.GITHUB_ACTIONS === 'true') {
-    const repositoryName = process.env.GITHUB_REPOSITORY?.split('/')[1]
-    if (repositoryName) {
-      return `/${repositoryName}/`
+  const repositoryName = process.env.GITHUB_REPOSITORY?.split('/')[1]
+  if (repositoryName) {
+    return `/${repositoryName}/`
+  }
+
+  try {
+    const packageJson = JSON.parse(
+      readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
+    ) as { homepage?: string }
+
+    if (packageJson.homepage) {
+      const homepagePath = new URL(packageJson.homepage).pathname
+      return withTrailingSlash(homepagePath === '/' ? '/' : homepagePath)
     }
+  } catch {
+    return '/'
   }
 
   return '/'
