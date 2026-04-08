@@ -1,44 +1,75 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import type { ScoreRecordInput } from '../types'
 import { toDatetimeLocalValue } from '../utils/datetime'
+import { EMOTION_OPTIONS, normalizeEmotionLevel } from '../utils/emotion'
 
 type ScoreFormProps = {
-  onSubmit: (input: { score: number; note: string; recordedAt: string }) => void
+  initialValues?: ScoreRecordInput
+  mode?: 'panel' | 'compact'
+  onCancel?: () => void
+  onSubmit: (input: ScoreRecordInput) => void
+  submitLabel?: string
 }
 
 type FormErrors = {
   score?: string
-  note?: string
   recordedAt?: string
 }
 
-const initialTime = () => toDatetimeLocalValue(new Date())
+const defaultValues = (): ScoreRecordInput => ({
+  score: 0,
+  emotion: 3,
+  note: '',
+  recordedAt: new Date().toISOString(),
+})
 
-export function ScoreForm({ onSubmit }: ScoreFormProps) {
-  const [score, setScore] = useState('')
-  const [note, setNote] = useState('')
-  const [recordedAt, setRecordedAt] = useState(initialTime)
+function toStateValues(values: ScoreRecordInput) {
+  return {
+    score: values.score > 0 ? values.score.toString() : '',
+    emotion: String(values.emotion),
+    note: values.note,
+    recordedAt: toDatetimeLocalValue(new Date(values.recordedAt)),
+  }
+}
+
+export function ScoreForm({
+  initialValues,
+  mode = 'panel',
+  onCancel,
+  onSubmit,
+  submitLabel = '新增紀錄',
+}: ScoreFormProps) {
+  const sourceValues = initialValues ?? defaultValues()
+  const [score, setScore] = useState(() => toStateValues(sourceValues).score)
+  const [emotion, setEmotion] = useState(() => toStateValues(sourceValues).emotion)
+  const [note, setNote] = useState(() => toStateValues(sourceValues).note)
+  const [recordedAt, setRecordedAt] = useState(() => toStateValues(sourceValues).recordedAt)
   const [errors, setErrors] = useState<FormErrors>({})
+
+  useEffect(() => {
+    const nextValues = toStateValues(initialValues ?? defaultValues())
+    setScore(nextValues.score)
+    setEmotion(nextValues.emotion)
+    setNote(nextValues.note)
+    setRecordedAt(nextValues.recordedAt)
+    setErrors({})
+  }, [initialValues])
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     const nextErrors: FormErrors = {}
     const parsedScore = Number(score)
-    const trimmedNote = note.trim()
     const recordedTime = new Date(recordedAt)
 
     if (score.trim() === '' || Number.isNaN(parsedScore)) {
-      nextErrors.score = '請輸入有效分數'
+      nextErrors.score = '請輸入分數。'
     } else if (parsedScore < 0 || parsedScore > 20) {
-      nextErrors.score = '分數必須介於 0 到 20 之間'
-    }
-
-    if (trimmedNote.length === 0) {
-      nextErrors.note = '請輸入備註'
+      nextErrors.score = '分數必須介於 0 到 20 之間。'
     }
 
     if (!recordedAt || Number.isNaN(recordedTime.getTime())) {
-      nextErrors.recordedAt = '請輸入有效日期時間'
+      nextErrors.recordedAt = '請輸入有效的記錄時間。'
     }
 
     setErrors(nextErrors)
@@ -48,73 +79,108 @@ export function ScoreForm({ onSubmit }: ScoreFormProps) {
 
     onSubmit({
       score: parsedScore,
-      note: trimmedNote,
+      emotion: normalizeEmotionLevel(emotion),
+      note: note.trim(),
       recordedAt: recordedTime.toISOString(),
     })
 
-    setScore('')
-    setNote('')
-    setRecordedAt(initialTime())
-    setErrors({})
+    if (!initialValues) {
+      const nextValues = toStateValues(defaultValues())
+      setScore(nextValues.score)
+      setEmotion(nextValues.emotion)
+      setNote(nextValues.note)
+      setRecordedAt(nextValues.recordedAt)
+      setErrors({})
+    }
+  }
+
+  const formContent = (
+    <form
+      className={`score-form ${mode === 'compact' ? 'score-form--compact' : ''}`}
+      noValidate
+      onSubmit={handleSubmit}
+    >
+      <label className="field">
+        <span>分數</span>
+        <input
+          aria-label="分數"
+          inputMode="decimal"
+          max="20"
+          min="0"
+          placeholder="例如 8.5"
+          step="0.1"
+          type="number"
+          value={score}
+          onChange={(event) => setScore(event.target.value)}
+        />
+        <small>分數範圍為 0 到 20。</small>
+        {errors.score ? <strong className="field-error">{errors.score}</strong> : null}
+      </label>
+
+      <label className="field">
+        <span>心情</span>
+        <select aria-label="心情" value={emotion} onChange={(event) => setEmotion(event.target.value)}>
+          {EMOTION_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <small>0 代表情緒最低，5 代表情緒最好。</small>
+      </label>
+
+      <label className="field">
+        <span>記錄時間</span>
+        <input
+          aria-label="記錄時間"
+          type="datetime-local"
+          value={recordedAt}
+          onChange={(event) => setRecordedAt(event.target.value)}
+        />
+        {errors.recordedAt ? (
+          <strong className="field-error">{errors.recordedAt}</strong>
+        ) : null}
+      </label>
+
+      <label className="field">
+        <span>備註</span>
+        <textarea
+          aria-label="備註"
+          placeholder="可選填，記下這次打分的原因或當時狀態。"
+          rows={mode === 'compact' ? 3 : 4}
+          value={note}
+          onChange={(event) => setNote(event.target.value)}
+        />
+      </label>
+
+      <div className="form-actions">
+        <button className="primary-button" type="submit">
+          {submitLabel}
+        </button>
+        {onCancel ? (
+          <button className="secondary-button" type="button" onClick={onCancel}>
+            取消
+          </button>
+        ) : null}
+      </div>
+    </form>
+  )
+
+  if (mode === 'compact') {
+    return formContent
   }
 
   return (
     <section className="panel form-panel">
       <div className="section-heading">
         <p className="eyebrow">Record Score</p>
-        <h2>建立新的打分紀錄</h2>
+        <h2>新增打分紀錄</h2>
         <p className="section-copy">
-          輸入分數、備註與時間，送出後會立刻更新圖表與歷史清單。
+          每次輸入分數時，同步為當下心情評分，之後就能一起分析情緒與分數的關係。
         </p>
       </div>
 
-      <form className="score-form" onSubmit={handleSubmit} noValidate>
-        <label className="field">
-          <span>分數</span>
-          <input
-            aria-label="分數"
-            inputMode="decimal"
-            min="0"
-            max="20"
-            step="0.1"
-            placeholder="例如 8.5"
-            type="number"
-            value={score}
-            onChange={(event) => setScore(event.target.value)}
-          />
-          <small>一般滿分 10，可輸入到 20。</small>
-          {errors.score ? <strong className="field-error">{errors.score}</strong> : null}
-        </label>
-
-        <label className="field">
-          <span>紀錄時間</span>
-          <input
-            aria-label="紀錄時間"
-            type="datetime-local"
-            value={recordedAt}
-            onChange={(event) => setRecordedAt(event.target.value)}
-          />
-          {errors.recordedAt ? (
-            <strong className="field-error">{errors.recordedAt}</strong>
-          ) : null}
-        </label>
-
-        <label className="field">
-          <span>備註</span>
-          <textarea
-            aria-label="備註"
-            placeholder="記下這次分數的原因、狀態或重點"
-            rows={4}
-            value={note}
-            onChange={(event) => setNote(event.target.value)}
-          />
-          {errors.note ? <strong className="field-error">{errors.note}</strong> : null}
-        </label>
-
-        <button className="primary-button" type="submit">
-          新增紀錄
-        </button>
-      </form>
+      {formContent}
     </section>
   )
 }

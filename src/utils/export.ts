@@ -44,11 +44,12 @@ export function buildExportPayload(
     }
   }
 
-  const header = ['id', 'score', 'note', 'recordedAt', 'createdAt']
+  const header = ['id', 'score', 'emotion', 'note', 'recordedAt', 'createdAt']
   const lines = records.map((record) =>
     [
       escapeCsvValue(record.id),
       escapeCsvValue(record.score),
+      escapeCsvValue(record.emotion),
       escapeCsvValue(record.note),
       escapeCsvValue(record.recordedAt),
       escapeCsvValue(record.createdAt),

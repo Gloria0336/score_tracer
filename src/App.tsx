@@ -5,16 +5,20 @@ import { RecordList } from './components/RecordList'
 import { RecordModal } from './components/RecordModal'
 import { ScoreForm } from './components/ScoreForm'
 import { SummaryCards } from './components/SummaryCards'
-import type { ScoreRecord } from './types'
+import type { ScoreRecord, ScoreRecordInput } from './types'
 import {
   getDistributionSeries,
+  getEmotionAverageSeries,
   getSummary,
   getTrendSeries,
   sortByRecordedAtDesc,
 } from './utils/analytics'
+import { parseImportedRecords } from './utils/import'
 import { loadRecords, saveRecords } from './utils/storage'
 
-function createRecord(input: Omit<ScoreRecord, 'id' | 'createdAt'>): ScoreRecord {
+const RECORDS_PER_PAGE = 10
+
+function createRecord(input: ScoreRecordInput): ScoreRecord {
   return {
     id: crypto.randomUUID(),
     createdAt: new Date().toISOString(),
@@ -24,7 +28,8 @@ function createRecord(input: Omit<ScoreRecord, 'id' | 'createdAt'>): ScoreRecord
 
 function App() {
   const [records, setRecords] = useState<ScoreRecord[]>(() => sortByRecordedAtDesc(loadRecords()))
-  const [selectedRecord, setSelectedRecord] = useState<ScoreRecord | null>(null)
+  const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     saveRecords(records)
@@ -33,14 +38,72 @@ function App() {
   const summary = useMemo(() => getSummary(records), [records])
   const trendData = useMemo(() => getTrendSeries(records), [records])
   const distributionData = useMemo(() => getDistributionSeries(records), [records])
+  const emotionAverageData = useMemo(() => getEmotionAverageSeries(records), [records])
+  const selectedRecord = useMemo(
+    () => records.find((record) => record.id === selectedRecordId) ?? null,
+    [records, selectedRecordId],
+  )
+  const totalPages = Math.max(1, Math.ceil(records.length / RECORDS_PER_PAGE))
+  const paginatedRecords = useMemo(() => {
+    const startIndex = (currentPage - 1) * RECORDS_PER_PAGE
+    return records.slice(startIndex, startIndex + RECORDS_PER_PAGE)
+  }, [currentPage, records])
 
-  const handleAddRecord = (input: Omit<ScoreRecord, 'id' | 'createdAt'>) => {
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages)
+    }
+  }, [currentPage, totalPages])
+
+  const handleAddRecord = (input: ScoreRecordInput) => {
     setRecords((current) => sortByRecordedAtDesc([createRecord(input), ...current]))
+    setCurrentPage(1)
+  }
+
+  const handleUpdateRecord = (id: string, input: ScoreRecordInput) => {
+    setRecords((current) =>
+      sortByRecordedAtDesc(
+        current.map((record) =>
+          record.id === id
+            ? {
+                ...record,
+                ...input,
+              }
+            : record,
+        ),
+      ),
+    )
   }
 
   const handleDelete = (id: string) => {
     setRecords((current) => current.filter((record) => record.id !== id))
-    setSelectedRecord((current) => (current?.id === id ? null : current))
+    setSelectedRecordId((current) => (current === id ? null : current))
+  }
+
+  const handleImport = async (content: string, fileName: string) => {
+    const { records: importedRecords, skippedCount } = parseImportedRecords(content, fileName)
+
+    setRecords((current) => {
+      const existingIds = new Set(current.map((record) => record.id))
+      const merged = importedRecords.map((record) => {
+        if (!existingIds.has(record.id)) {
+          existingIds.add(record.id)
+          return record
+        }
+
+        const nextId = crypto.randomUUID()
+        existingIds.add(nextId)
+        return { ...record, id: nextId }
+      })
+
+      return sortByRecordedAtDesc([...merged, ...current])
+    })
+    setCurrentPage(1)
+
+    return {
+      importedCount: importedRecords.length,
+      skippedCount,
+    }
   }
 
   return (
@@ -48,9 +111,9 @@ function App() {
       <header className="hero">
         <div className="hero__content">
           <p className="eyebrow">Score Tracer</p>
-          <h1>把每一次打分，整理成看得懂的趨勢。</h1>
+          <h1>記錄分數，也一起記住當下心情</h1>
           <p className="hero__copy">
-            記錄分數、原因與時間，再用動態圖表快速看出高低起伏、分數分布與最近狀態。
+            追蹤每一次打分、回看情緒變化，並用圖表整理趨勢、分布與不同情緒分級下的平均表現。
           </p>
         </div>
       </header>
@@ -61,21 +124,37 @@ function App() {
         <section className="panel insights-panel">
           <div className="section-heading">
             <p className="eyebrow">Snapshot</p>
-            <h2>分數總覽</h2>
+            <h2>目前概況</h2>
             <p className="section-copy">
-              用最少的資訊先抓到整體節奏，再往下看圖表、紀錄與完整匯出。
+              快速查看總筆數、平均、最高、最低與最近一次分數，並可匯出或匯入紀錄。
             </p>
           </div>
           <SummaryCards summary={summary} />
-          <ExportPanel records={records} />
+          <ExportPanel records={records} onImport={handleImport} />
         </section>
 
-        <ChartsSection distributionData={distributionData} trendData={trendData} />
-        <RecordList records={records} onDelete={handleDelete} onSelect={setSelectedRecord} />
+        <ChartsSection
+          distributionData={distributionData}
+          emotionAverageData={emotionAverageData}
+          trendData={trendData}
+        />
+        <RecordList
+          currentPage={currentPage}
+          records={paginatedRecords}
+          totalCount={records.length}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          onSelect={(record) => setSelectedRecordId(record.id)}
+        />
       </main>
 
       {selectedRecord ? (
-        <RecordModal record={selectedRecord} onClose={() => setSelectedRecord(null)} />
+        <RecordModal
+          record={selectedRecord}
+          onClose={() => setSelectedRecordId(null)}
+          onDelete={handleDelete}
+          onSave={handleUpdateRecord}
+        />
       ) : null}
     </div>
   )

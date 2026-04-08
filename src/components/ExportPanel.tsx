@@ -1,63 +1,99 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { ScoreRecord } from '../types'
 import { buildExportPayload, type ExportFormat, deliverExportFile } from '../utils/export'
 
 type ExportPanelProps = {
   records: ScoreRecord[]
+  onImport: (
+    content: string,
+    fileName: string,
+  ) => Promise<{ importedCount: number; skippedCount: number }> | { importedCount: number; skippedCount: number }
 }
 
-export function ExportPanel({ records }: ExportPanelProps) {
-  const [isExporting, setIsExporting] = useState(false)
-  const [message, setMessage] = useState('iPhone 會優先開啟分享視窗，你可以直接存到「檔案」。')
+export function ExportPanel({ records, onImport }: ExportPanelProps) {
+  const [isWorking, setIsWorking] = useState(false)
+  const [message, setMessage] = useState('可匯出為 JSON 或 CSV，也可匯入先前備份的紀錄檔。')
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const hasRecords = records.length > 0
 
   const handleExport = async (format: ExportFormat) => {
-    if (!hasRecords || isExporting) {
+    if (!hasRecords || isWorking) {
       return
     }
 
-    setIsExporting(true)
+    setIsWorking(true)
 
     try {
       const payload = buildExportPayload(records, format)
       const result = await deliverExportFile(payload)
 
       if (result === 'shared') {
-        setMessage('已開啟分享視窗，請選擇「儲存到檔案」或其他目標。')
+        setMessage('已開啟系統分享視窗，你可以把檔案存到其他 App。')
         return
       }
 
       if (result === 'opened') {
-        setMessage('已開啟匯出預覽頁，請使用 Safari 的分享按鈕儲存到「檔案」。')
+        setMessage('已開啟檔案預覽頁面，請再從瀏覽器內另存檔案。')
         return
       }
 
       if (result === 'downloaded') {
-        setMessage('匯出檔案已開始下載。')
+        setMessage('檔案已成功匯出。')
         return
       }
 
-      setMessage('已取消匯出。')
+      setMessage('匯出已取消。')
     } finally {
-      setIsExporting(false)
+      setIsWorking(false)
+    }
+  }
+
+  const handleChooseFile = () => {
+    if (!isWorking) {
+      fileInputRef.current?.click()
+    }
+  }
+
+  const handleImportFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+
+    if (!file || isWorking) {
+      return
+    }
+
+    setIsWorking(true)
+
+    try {
+      const content = await file.text()
+      const result = await onImport(content, file.name)
+      setMessage(
+        result.skippedCount > 0
+          ? `已匯入 ${result.importedCount} 筆，略過 ${result.skippedCount} 筆格式不正確的資料。`
+          : `已成功匯入 ${result.importedCount} 筆紀錄。`,
+      )
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : '匯入失敗，請確認檔案格式是否正確。')
+    } finally {
+      setIsWorking(false)
     }
   }
 
   return (
-    <section className="export-block" aria-label="匯出資料">
+    <section className="export-block" aria-label="資料匯入與匯出">
       <div>
-        <p className="eyebrow">Export</p>
-        <h3>輸出全部資料</h3>
+        <p className="eyebrow">Import / Export</p>
+        <h3>管理資料</h3>
         <p className="helper-copy">
-          可匯出目前所有分數紀錄、備註與時間。JSON 適合完整備份，CSV 適合 Excel、Numbers 或表格分析。
+          JSON 適合完整備份與還原，CSV 適合用 Excel、Numbers 或其他表格工具查看。
         </p>
       </div>
 
       <div className="export-actions">
         <button
           className="secondary-button"
-          disabled={!hasRecords || isExporting}
+          disabled={!hasRecords || isWorking}
           type="button"
           onClick={() => void handleExport('json')}
         >
@@ -65,16 +101,26 @@ export function ExportPanel({ records }: ExportPanelProps) {
         </button>
         <button
           className="secondary-button"
-          disabled={!hasRecords || isExporting}
+          disabled={!hasRecords || isWorking}
           type="button"
           onClick={() => void handleExport('csv')}
         >
           匯出 CSV
         </button>
+        <button className="secondary-button" disabled={isWorking} type="button" onClick={handleChooseFile}>
+          匯入紀錄
+        </button>
+        <input
+          ref={fileInputRef}
+          accept=".json,.csv,application/json,text/csv"
+          className="visually-hidden"
+          type="file"
+          onChange={(event) => void handleImportFile(event)}
+        />
       </div>
 
       <p className="helper-copy export-status" role="status">
-        {hasRecords ? message : '目前沒有資料可匯出，新增紀錄後就能下載或分享到 iPhone 檔案 App。'}
+        {message}
       </p>
     </section>
   )

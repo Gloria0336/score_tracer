@@ -1,5 +1,13 @@
-import type { DistributionPoint, ScoreRecord, ScoreSummary, TrendPoint } from '../types'
+import type {
+  DistributionPoint,
+  EmotionAveragePoint,
+  EmotionLevel,
+  ScoreRecord,
+  ScoreSummary,
+  TrendPoint,
+} from '../types'
 import { formatChartLabel } from './datetime'
+import { getEmotionLabel } from './emotion'
 
 function sortByRecordedAtAsc(records: ScoreRecord[]): ScoreRecord[] {
   return [...records].sort(
@@ -61,4 +69,27 @@ export function getDistributionSeries(records: ScoreRecord[]): DistributionPoint
       bucket: `${bucket} 分`,
       count,
     }))
+}
+
+export function getEmotionAverageSeries(records: ScoreRecord[]): EmotionAveragePoint[] {
+  const aggregate = new Map<EmotionLevel, { totalScore: number; count: number }>()
+
+  records.forEach((record) => {
+    const current = aggregate.get(record.emotion) ?? { totalScore: 0, count: 0 }
+    aggregate.set(record.emotion, {
+      totalScore: current.totalScore + record.score,
+      count: current.count + 1,
+    })
+  })
+
+  return [0, 1, 2, 3, 4, 5].map((emotion) => {
+    const current = aggregate.get(emotion as EmotionLevel)
+
+    return {
+      emotion: emotion as EmotionLevel,
+      label: getEmotionLabel(emotion as EmotionLevel),
+      averageScore: current ? current.totalScore / current.count : null,
+      count: current?.count ?? 0,
+    }
+  })
 }

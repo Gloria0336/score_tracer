@@ -5,6 +5,7 @@ const records: ScoreRecord[] = [
   {
     id: 'record-1',
     score: 9.5,
+    emotion: 4,
     note: '第一次紀錄, 含逗號與"引號"',
     recordedAt: '2026-04-06T08:30:00.000Z',
     createdAt: '2026-04-06T08:31:00.000Z',
@@ -41,15 +42,15 @@ describe('export utilities', () => {
 
     const parsed = JSON.parse(payload.content)
     expect(parsed.recordCount).toBe(1)
-    expect(parsed.records[0].note).toBe('第一次紀錄, 含逗號與"引號"')
+    expect(parsed.records[0].emotion).toBe(4)
   })
 
   it('builds a CSV export with utf-8 bom and escaped fields', () => {
     const payload = buildExportPayload(records, 'csv', new Date('2026-04-06T09:00:00'))
 
     expect(payload.filename).toBe('score-tracer-export-2026-04-06-0900.csv')
-    expect(payload.content.startsWith('\uFEFFid,score,note')).toBe(true)
-    expect(payload.content).toContain('"第一次紀錄, 含逗號與""引號"""')
+    expect(payload.content.startsWith('\uFEFFid,score,emotion,note')).toBe(true)
+    expect(payload.content).toContain('4,"第一次紀錄, 含逗號與""引號"""')
   })
 
   it('uses the native share sheet on iPhone-compatible browsers', async () => {
