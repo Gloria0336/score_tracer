@@ -1,5 +1,5 @@
 import type { ScoreRecord } from '../types'
-import { buildExportPayload, deliverExportFile } from './export'
+import { buildExportPayload, deliverBinaryExportFile, deliverExportFile } from './export'
 
 const records: ScoreRecord[] = [
   {
@@ -130,5 +130,28 @@ describe('export utilities', () => {
     expect(link.target).toBe('_blank')
     expect(link.download).toBe('')
     expect(link.click).toHaveBeenCalledTimes(1)
+  })
+
+  it('supports direct blob delivery for generated image exports', async () => {
+    const share = vi.fn().mockResolvedValue(undefined)
+
+    const result = await deliverBinaryExportFile(
+      {
+        blob: new Blob(['image-bytes'], { type: 'image/jpeg' }),
+        filename: 'score-tracer-report.jpg',
+        mimeType: 'image/jpeg',
+      },
+      {
+        FileCtor: File,
+        navigator: {
+          canShare: vi.fn().mockReturnValue(true),
+          share,
+          userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)',
+        },
+      },
+    )
+
+    expect(result).toBe('shared')
+    expect(share).toHaveBeenCalledTimes(1)
   })
 })

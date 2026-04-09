@@ -1,8 +1,17 @@
 import { useRef, useState } from 'react'
 import type { ScoreRecord } from '../types'
-import { buildExportPayload, type ExportFormat, deliverExportFile } from '../utils/export'
+import {
+  buildExportPayload,
+  deliverExportFile,
+  type ExportDeliveryResult,
+  type ExportFormat,
+} from '../utils/export'
+import { CHART_EXPORTS, type ChartExportKey } from '../utils/reportImage'
 
 type ExportPanelProps = {
+  onExportImage:
+    | ((target: ChartExportKey | 'report') => Promise<ExportDeliveryResult>)
+    | ((target: ChartExportKey | 'report') => ExportDeliveryResult)
   records: ScoreRecord[]
   onImport: (
     content: string,
@@ -10,9 +19,11 @@ type ExportPanelProps = {
   ) => Promise<{ importedCount: number; skippedCount: number }> | { importedCount: number; skippedCount: number }
 }
 
-export function ExportPanel({ records, onImport }: ExportPanelProps) {
+const DEFAULT_MESSAGE = '可匯出 JSON、CSV、單張圖表 JPG 與 A4 圖像報告，也支援從 JSON / CSV 匯入。'
+
+export function ExportPanel({ onExportImage, records, onImport }: ExportPanelProps) {
   const [isWorking, setIsWorking] = useState(false)
-  const [message, setMessage] = useState('可匯出為 JSON 或 CSV，也可匯入先前備份的紀錄檔。')
+  const [message, setMessage] = useState(DEFAULT_MESSAGE)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const hasRecords = records.length > 0
@@ -27,23 +38,26 @@ export function ExportPanel({ records, onImport }: ExportPanelProps) {
     try {
       const payload = buildExportPayload(records, format)
       const result = await deliverExportFile(payload)
+      setMessage(describeDeliveryResult(result, format === 'json' ? 'JSON 檔案' : 'CSV 檔案'))
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : '檔案匯出失敗，請稍後再試一次。')
+    } finally {
+      setIsWorking(false)
+    }
+  }
 
-      if (result === 'shared') {
-        setMessage('已開啟系統分享視窗，你可以把檔案存到其他 App。')
-        return
-      }
+  const handleImageExport = async (target: ChartExportKey | 'report') => {
+    if (!hasRecords || isWorking) {
+      return
+    }
 
-      if (result === 'opened') {
-        setMessage('已開啟檔案預覽頁面，請再從瀏覽器內另存檔案。')
-        return
-      }
+    setIsWorking(true)
 
-      if (result === 'downloaded') {
-        setMessage('檔案已成功匯出。')
-        return
-      }
-
-      setMessage('匯出已取消。')
+    try {
+      const result = await onExportImage(target)
+      setMessage(describeDeliveryResult(result, target === 'report' ? 'A4 報告 JPG' : '圖表 JPG'))
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : '圖片匯出失敗，請稍後再試一次。')
     } finally {
       setIsWorking(false)
     }
@@ -70,11 +84,11 @@ export function ExportPanel({ records, onImport }: ExportPanelProps) {
       const result = await onImport(content, file.name)
       setMessage(
         result.skippedCount > 0
-          ? `已匯入 ${result.importedCount} 筆，略過 ${result.skippedCount} 筆格式不正確的資料。`
-          : `已成功匯入 ${result.importedCount} 筆紀錄。`,
+          ? `已匯入 ${result.importedCount} 筆資料，略過 ${result.skippedCount} 筆格式不完整的項目。`
+          : `已成功匯入 ${result.importedCount} 筆資料。`,
       )
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : '匯入失敗，請確認檔案格式是否正確。')
+      setMessage(error instanceof Error ? error.message : '匯入失敗，請確認檔案內容後再試一次。')
     } finally {
       setIsWorking(false)
     }
@@ -84,9 +98,9 @@ export function ExportPanel({ records, onImport }: ExportPanelProps) {
     <section className="export-block" aria-label="資料匯入與匯出">
       <div>
         <p className="eyebrow">Import / Export</p>
-        <h3>管理資料</h3>
+        <h3>資料與報告輸出</h3>
         <p className="helper-copy">
-          JSON 適合完整備份與還原，CSV 適合用 Excel、Numbers 或其他表格工具查看。
+          JSON / CSV 適合備份與整理原始資料，JPG 影像則適合快速分享圖表與 A4 版面報告。
         </p>
       </div>
 
@@ -108,7 +122,7 @@ export function ExportPanel({ records, onImport }: ExportPanelProps) {
           匯出 CSV
         </button>
         <button className="secondary-button" disabled={isWorking} type="button" onClick={handleChooseFile}>
-          匯入紀錄
+          匯入資料
         </button>
         <input
           ref={fileInputRef}
@@ -119,9 +133,47 @@ export function ExportPanel({ records, onImport }: ExportPanelProps) {
         />
       </div>
 
+      <div className="export-actions export-actions--images">
+        {CHART_EXPORTS.map((chart) => (
+          <button
+            key={chart.key}
+            className="secondary-button"
+            disabled={!hasRecords || isWorking}
+            type="button"
+            onClick={() => void handleImageExport(chart.key)}
+          >
+            {chart.buttonLabel}
+          </button>
+        ))}
+        <button
+          className="secondary-button"
+          disabled={!hasRecords || isWorking}
+          type="button"
+          onClick={() => void handleImageExport('report')}
+        >
+          匯出 A4 報告 JPG
+        </button>
+      </div>
+
       <p className="helper-copy export-status" role="status">
         {message}
       </p>
     </section>
   )
+}
+
+function describeDeliveryResult(result: ExportDeliveryResult, label: string) {
+  if (result === 'shared') {
+    return `${label} 已送到系統分享面板，可直接分享到 iPhone 相簿或通訊軟體。`
+  }
+
+  if (result === 'opened') {
+    return `${label} 已在新分頁開啟，可繼續儲存或分享。`
+  }
+
+  if (result === 'downloaded') {
+    return `${label} 已開始下載。`
+  }
+
+  return `${label} 匯出已取消。`
 }

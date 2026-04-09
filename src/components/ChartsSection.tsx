@@ -1,3 +1,4 @@
+import type { RefObject } from 'react'
 import {
   Bar,
   BarChart,
@@ -12,11 +13,15 @@ import {
 } from 'recharts'
 import type { DistributionPoint, EmotionAveragePoint, TrendPoint } from '../types'
 import { formatDateTime } from '../utils/datetime'
+import { CHART_EXPORTS } from '../utils/reportImage'
 
 type ChartsSectionProps = {
-  trendData: TrendPoint[]
+  distributionChartRef: RefObject<HTMLElement | null>
   distributionData: DistributionPoint[]
   emotionAverageData: EmotionAveragePoint[]
+  emotionChartRef: RefObject<HTMLElement | null>
+  trendChartRef: RefObject<HTMLElement | null>
+  trendData: TrendPoint[]
 }
 
 function extractTooltipNumber(value: string | number | readonly (string | number)[] | undefined) {
@@ -29,7 +34,7 @@ function formatScoreTooltip(value: string | number | readonly (string | number)[
 }
 
 function formatCountTooltip(value: string | number | readonly (string | number)[] | undefined) {
-  return [`${extractTooltipNumber(value)} 筆`, '紀錄數'] as [string, string]
+  return [`${extractTooltipNumber(value)} 筆`, '記錄數'] as [string, string]
 }
 
 function formatEmotionTooltip(
@@ -45,27 +50,31 @@ function formatEmotionTooltip(
 }
 
 export function ChartsSection({
-  trendData,
+  distributionChartRef,
   distributionData,
   emotionAverageData,
+  emotionChartRef,
+  trendChartRef,
+  trendData,
 }: ChartsSectionProps) {
   const hasEmotionData = emotionAverageData.some((item) => item.count > 0)
+  const [trendMeta, distributionMeta, emotionMeta] = CHART_EXPORTS
 
   return (
     <section className="panel charts-panel">
       <div className="section-heading">
         <p className="eyebrow">Analytics</p>
-        <h2>分數與情緒分析</h2>
+        <h2>圖表分析</h2>
         <p className="section-copy">
-          透過趨勢、分數分布與情緒分級平均分數三種圖表，快速看出你的記錄模式。
+          這裡會把每次分數紀錄轉成趨勢、分布與情緒平均圖表，方便後續輸出成 JPG 報告。
         </p>
       </div>
 
       <div className="charts-grid charts-grid--triple">
-        <article className="chart-card">
+        <article className="chart-card" ref={trendChartRef}>
           <div className="chart-card__head">
-            <h3>分數趨勢</h3>
-            <p>依記錄時間排序，觀察分數隨時間的高低變化。</p>
+            <h3>{trendMeta.title}</h3>
+            <p>{trendMeta.subtitle}</p>
           </div>
           {trendData.length > 0 ? (
             <div className="chart-shell">
@@ -94,14 +103,14 @@ export function ChartsSection({
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="empty-chart">尚無紀錄，新增第一筆後就能看到分數趨勢。</div>
+            <div className="empty-chart">尚未有足夠資料可建立趨勢圖。</div>
           )}
         </article>
 
-        <article className="chart-card">
+        <article className="chart-card" ref={distributionChartRef}>
           <div className="chart-card__head">
-            <h3>分數分布</h3>
-            <p>把分數四捨五入後統計筆數，了解常見分數落點。</p>
+            <h3>{distributionMeta.title}</h3>
+            <p>{distributionMeta.subtitle}</p>
           </div>
           {distributionData.length > 0 ? (
             <div className="chart-shell">
@@ -123,14 +132,14 @@ export function ChartsSection({
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="empty-chart">尚未累積足夠紀錄，這裡會顯示各分數區間的筆數。</div>
+            <div className="empty-chart">至少需要一筆分數資料才能建立分布圖。</div>
           )}
         </article>
 
-        <article className="chart-card">
+        <article className="chart-card" ref={emotionChartRef}>
           <div className="chart-card__head">
-            <h3>情緒與分數關係</h3>
-            <p>比較每個情緒分級下的平均打分，查看心情與表現之間的關聯。</p>
+            <h3>{emotionMeta.title}</h3>
+            <p>{emotionMeta.subtitle}</p>
           </div>
           {hasEmotionData ? (
             <div className="chart-shell">
@@ -159,7 +168,7 @@ export function ChartsSection({
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="empty-chart">先新增幾筆含心情分級的紀錄，這裡就會顯示各情緒分級的平均分數。</div>
+            <div className="empty-chart">至少需要一筆含情緒資料的紀錄才能建立情緒平均圖。</div>
           )}
         </article>
       </div>

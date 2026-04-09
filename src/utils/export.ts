@@ -8,6 +8,12 @@ export type ExportPayload = {
   mimeType: string
 }
 
+export type BinaryExportPayload = {
+  blob: Blob
+  filename: string
+  mimeType: string
+}
+
 export type ExportDeliveryResult = 'shared' | 'downloaded' | 'opened' | 'cancelled'
 
 type RuntimeNavigator = Pick<Navigator, 'canShare' | 'share' | 'userAgent' | 'platform' | 'maxTouchPoints'>
@@ -68,17 +74,38 @@ export async function deliverExportFile(
   runtime: ExportRuntime = {},
 ): Promise<ExportDeliveryResult> {
   const BlobCtor = runtime.BlobCtor ?? Blob
+  const blob = new BlobCtor([payload.content], { type: payload.mimeType })
+
+  return deliverPreparedBlob(
+    {
+      blob,
+      filename: payload.filename,
+      mimeType: payload.mimeType,
+    },
+    runtime,
+  )
+}
+
+export async function deliverBinaryExportFile(
+  payload: BinaryExportPayload,
+  runtime: ExportRuntime = {},
+): Promise<ExportDeliveryResult> {
+  return deliverPreparedBlob(payload, runtime)
+}
+
+async function deliverPreparedBlob(
+  payload: BinaryExportPayload,
+  runtime: ExportRuntime,
+): Promise<ExportDeliveryResult> {
   const FileCtor = runtime.FileCtor ?? (typeof File !== 'undefined' ? File : undefined)
   const activeNavigator = runtime.navigator ?? (typeof navigator !== 'undefined' ? navigator : undefined)
   const activeDocument = runtime.document ?? (typeof document !== 'undefined' ? document : undefined)
   const activeUrl = runtime.url ?? URL
   const setTimeoutFn = runtime.setTimeoutFn ?? setTimeout
-
-  const blob = new BlobCtor([payload.content], { type: payload.mimeType })
   const preferShareSheet = isAppleMobileDevice(activeNavigator)
 
   if (preferShareSheet && activeNavigator?.share && FileCtor) {
-    const file = new FileCtor([blob], payload.filename, {
+    const file = new FileCtor([payload.blob], payload.filename, {
       lastModified: Date.now(),
       type: payload.mimeType,
     })
@@ -107,7 +134,7 @@ export async function deliverExportFile(
     return 'cancelled'
   }
 
-  const objectUrl = activeUrl.createObjectURL(blob)
+  const objectUrl = activeUrl.createObjectURL(payload.blob)
   const link = activeDocument.createElement('a')
   link.href = objectUrl
   link.rel = 'noopener noreferrer'
