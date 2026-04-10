@@ -4,15 +4,42 @@ import type {
   EmotionLevel,
   ScoreRecord,
   ScoreSummary,
+  TimePeriodKey,
+  TimePeriodPoint,
   TrendPoint,
 } from '../types'
 import { formatChartLabel } from './datetime'
 import { getEmotionLabel } from './emotion'
 
+const TIME_PERIODS: Array<{ key: TimePeriodKey; label: string; range: string }> = [
+  { key: 'morning', label: '早上', range: '08:00-12:00' },
+  { key: 'afternoon', label: '下午', range: '12:00-18:00' },
+  { key: 'evening', label: '晚上', range: '18:00-00:00' },
+  { key: 'lateNight', label: '深夜', range: '00:00-08:00' },
+]
+
 function sortByRecordedAtAsc(records: ScoreRecord[]): ScoreRecord[] {
   return [...records].sort(
     (a, b) => new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime(),
   )
+}
+
+function getTimePeriodKey(recordedAt: string): TimePeriodKey {
+  const hour = new Date(recordedAt).getHours()
+
+  if (hour >= 8 && hour < 12) {
+    return 'morning'
+  }
+
+  if (hour >= 12 && hour < 18) {
+    return 'afternoon'
+  }
+
+  if (hour >= 18) {
+    return 'evening'
+  }
+
+  return 'lateNight'
 }
 
 export function sortByRecordedAtDesc(records: ScoreRecord[]): ScoreRecord[] {
@@ -88,6 +115,32 @@ export function getEmotionAverageSeries(records: ScoreRecord[]): EmotionAverageP
     return {
       emotion: emotion as EmotionLevel,
       label: getEmotionLabel(emotion as EmotionLevel),
+      averageScore: current ? current.totalScore / current.count : null,
+      count: current?.count ?? 0,
+    }
+  })
+}
+
+export function getTimePeriodSeries(records: ScoreRecord[]): TimePeriodPoint[] {
+  const aggregate = new Map<TimePeriodKey, { totalScore: number; count: number }>()
+
+  records.forEach((record) => {
+    const key = getTimePeriodKey(record.recordedAt)
+    const current = aggregate.get(key) ?? { totalScore: 0, count: 0 }
+
+    aggregate.set(key, {
+      totalScore: current.totalScore + record.score,
+      count: current.count + 1,
+    })
+  })
+
+  return TIME_PERIODS.map(({ key, label, range }) => {
+    const current = aggregate.get(key)
+
+    return {
+      key,
+      label,
+      range,
       averageScore: current ? current.totalScore / current.count : null,
       count: current?.count ?? 0,
     }

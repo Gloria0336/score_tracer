@@ -38,3 +38,13 @@ export type EmotionAveragePoint = {
   averageScore: number | null
   count: number
 }
+
+export type TimePeriodKey = 'lateNight' | 'morning' | 'afternoon' | 'evening'
+
+export type TimePeriodPoint = {
+  key: TimePeriodKey
+  label: string
+  range: string
+  averageScore: number | null
+  count: number
+}

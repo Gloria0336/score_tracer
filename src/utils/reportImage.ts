@@ -3,11 +3,12 @@ import type {
   EmotionAveragePoint,
   ScoreRecord,
   ScoreSummary,
+  TimePeriodPoint,
   TrendPoint,
 } from '../types'
 import { formatDateTime } from './datetime'
 
-export type ChartExportKey = 'trend' | 'distribution' | 'emotion'
+export type ChartExportKey = 'trend' | 'distribution' | 'emotion' | 'timePeriod'
 
 export type ChartExportDefinition = {
   key: ChartExportKey
@@ -36,6 +37,7 @@ type BuildReportImageOptions = {
   records: ScoreRecord[]
   sources: Record<ChartExportKey, HTMLElement | null>
   summary: ScoreSummary
+  timePeriodData: TimePeriodPoint[]
   trendData: TrendPoint[]
 }
 
@@ -49,24 +51,31 @@ const A4_HEIGHT = 1754
 export const CHART_EXPORTS: ChartExportDefinition[] = [
   {
     key: 'trend',
-    buttonLabel: '匯出趨勢 JPG',
+    buttonLabel: '匯出趨勢圖 JPG',
     filenamePrefix: 'trend-chart',
     title: '分數趨勢圖',
     subtitle: '依照記錄時間檢視分數變化，適合快速查看近期波動。',
   },
   {
     key: 'distribution',
-    buttonLabel: '匯出分布 JPG',
+    buttonLabel: '匯出分布圖 JPG',
     filenamePrefix: 'distribution-chart',
     title: '分數分布圖',
     subtitle: '查看分數集中在哪些區間，辨識高低分是否過度集中。',
   },
   {
     key: 'emotion',
-    buttonLabel: '匯出情緒 JPG',
+    buttonLabel: '匯出情緒圖 JPG',
     filenamePrefix: 'emotion-chart',
     title: '情緒平均圖',
     subtitle: '比較不同情緒狀態下的平均分數，觀察感受與表現關聯。',
+  },
+  {
+    key: 'timePeriod',
+    buttonLabel: '匯出時段分析 JPG',
+    filenamePrefix: 'time-period-chart',
+    title: '時段分數分析圖',
+    subtitle: '比較早上、下午、晚上與深夜的平均分數與紀錄次數，辨識高分常出現的時段。',
   },
 ]
 
@@ -131,9 +140,10 @@ export async function buildA4ReportImagePayload({
   records,
   sources,
   summary,
+  timePeriodData,
   trendData,
 }: BuildReportImageOptions): Promise<ChartImagePayload> {
-  const [trendImage, distributionImage, emotionImage] = await Promise.all(
+  const [trendImage, distributionImage, emotionImage, timePeriodImage] = await Promise.all(
     CHART_EXPORTS.map((chart) => {
       const source = sources[chart.key]
       if (!source) {
@@ -154,7 +164,7 @@ export async function buildA4ReportImagePayload({
   drawText(context, 'Score Tracer A4 圖像報告', 84, 126, '700 54px "Segoe UI", "Noto Sans TC", sans-serif', '#102033')
   drawWrappedText(
     context,
-    `共 ${records.length} 筆記錄，整理三張分析圖表與摘要指標，輸出為單張直式 A4 JPG，方便 iPhone 預覽、分享與存入相簿。`,
+    `共 ${records.length} 筆記錄，整理趨勢、分布、情緒與時段四張分析圖表，輸出為單張直式 A4 JPG，方便手機預覽與分享。`,
     84,
     178,
     A4_WIDTH - 168,
@@ -165,11 +175,11 @@ export async function buildA4ReportImagePayload({
   drawText(context, `報告時間 ${timestamp}`, 84, 258, '600 24px "Segoe UI", "Noto Sans TC", sans-serif', '#7b8797')
 
   const stats = [
-    { label: '記錄數', value: String(summary.total) },
+    { label: '紀錄次數', value: String(summary.total) },
     { label: '平均分數', value: summary.total > 0 ? summary.average.toFixed(2) : '--' },
     { label: '最新分數', value: summary.latest !== undefined ? summary.latest.toFixed(1) : '--' },
-    { label: '最高分', value: summary.total > 0 ? summary.max.toFixed(1) : '--' },
-    { label: '最低分', value: summary.total > 0 ? summary.min.toFixed(1) : '--' },
+    { label: '最高分數', value: summary.total > 0 ? summary.max.toFixed(1) : '--' },
+    { label: '最低分數', value: summary.total > 0 ? summary.min.toFixed(1) : '--' },
   ]
 
   const statY = 314
@@ -210,7 +220,7 @@ export async function buildA4ReportImagePayload({
     height: 430,
   })
   drawReportChartCard(context, {
-    title: `${CHART_EXPORTS[1].title} (${distributionData.length} 組)`,
+    title: `${CHART_EXPORTS[1].title} (${distributionData.length} 區間)`,
     subtitle: CHART_EXPORTS[1].subtitle,
     image: distributionImage,
     x: 84 + halfWidth + chartGap,
@@ -224,8 +234,17 @@ export async function buildA4ReportImagePayload({
     image: emotionImage,
     x: 84,
     y: 950,
-    width: A4_WIDTH - 168,
-    height: 534,
+    width: halfWidth,
+    height: 430,
+  })
+  drawReportChartCard(context, {
+    title: `${CHART_EXPORTS[3].title} (${timePeriodData.filter((item) => item.count > 0).length} 時段)`,
+    subtitle: buildTimePeriodSummary(timePeriodData),
+    image: timePeriodImage,
+    x: 84 + halfWidth + chartGap,
+    y: 950,
+    width: halfWidth,
+    height: 430,
   })
 
   drawText(
@@ -250,22 +269,34 @@ function buildEmotionSummary(emotionAverageData: EmotionAveragePoint[]) {
     .sort((a, b) => (b.averageScore ?? 0) - (a.averageScore ?? 0))[0]
 
   if (!strongest || strongest.averageScore === null) {
-    return '目前還沒有足夠的情緒資料，圖表會保留空欄位供後續追蹤。'
+    return '目前尚無足夠的情緒資料，持續記錄後就能比較不同情緒下的平均表現。'
   }
 
-  return `情緒 ${strongest.emotion} 目前平均 ${strongest.averageScore.toFixed(1)} 分，是最高的情緒分數表現。`
+  return `${strongest.label} 目前平均 ${strongest.averageScore.toFixed(1)} 分，是表現最高的情緒區間。`
+}
+
+function buildTimePeriodSummary(timePeriodData: TimePeriodPoint[]) {
+  const strongest = [...timePeriodData]
+    .filter((item) => item.averageScore !== null)
+    .sort((a, b) => (b.averageScore ?? 0) - (a.averageScore ?? 0))[0]
+
+  if (!strongest || strongest.averageScore === null) {
+    return '目前尚無足夠的時段資料，持續記錄後就能看出一天中哪個時段最容易拿高分。'
+  }
+
+  return `${strongest.label} (${strongest.range}) 目前平均 ${strongest.averageScore.toFixed(1)} 分，共 ${strongest.count} 次記錄。`
 }
 
 function buildFooterText(records: ScoreRecord[]) {
   if (records.length === 0) {
-    return '尚無記錄可分析。'
+    return '目前沒有任何記錄可供輸出。'
   }
 
   const latestRecord = [...records].sort(
     (a, b) => new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime(),
   )[0]
 
-  return `最新記錄時間 ${formatDateTime(latestRecord.recordedAt)}，本報告為 JPG 單圖輸出，可直接分享至 iPhone 相簿或通訊軟體。`
+  return `最新記錄時間 ${formatDateTime(latestRecord.recordedAt)}，本報告為 JPG 單圖輸出，可直接分享至手機相簿或通訊軟體。`
 }
 
 function drawReportChartCard(
@@ -439,7 +470,7 @@ function wrapText(context: CanvasRenderingContext2D, text: string, maxWidth: num
 function getChartSvg(source: HTMLElement) {
   const svgElement = source.querySelector('svg')
   if (!svgElement) {
-    throw new Error('目前找不到可輸出的圖表，請稍後再試一次。')
+    throw new Error('找不到圖表內容，請稍後再試一次。')
   }
 
   return svgElement
@@ -470,7 +501,7 @@ function loadImage(source: string) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image()
     image.onload = () => resolve(image)
-    image.onerror = () => reject(new Error('圖表影像轉換失敗，請再試一次。'))
+    image.onerror = () => reject(new Error('圖表圖片轉換失敗，請稍後再試一次。'))
     image.src = source
   })
 }
@@ -485,7 +516,7 @@ function createCanvas(width: number, height: number) {
 function getCanvasContext(canvas: HTMLCanvasElement) {
   const context = canvas.getContext('2d')
   if (!context) {
-    throw new Error('目前裝置不支援圖片匯出。')
+    throw new Error('無法建立圖片輸出所需的畫布。')
   }
 
   return context

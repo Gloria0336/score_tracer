@@ -10,6 +10,7 @@ import {
   getDistributionSeries,
   getEmotionAverageSeries,
   getSummary,
+  getTimePeriodSeries,
   getTrendSeries,
   sortByRecordedAtDesc,
 } from './utils/analytics'
@@ -40,6 +41,7 @@ function App() {
   const trendChartRef = useRef<HTMLElement | null>(null)
   const distributionChartRef = useRef<HTMLElement | null>(null)
   const emotionChartRef = useRef<HTMLElement | null>(null)
+  const timePeriodChartRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     saveRecords(records)
@@ -49,6 +51,7 @@ function App() {
   const trendData = useMemo(() => getTrendSeries(records), [records])
   const distributionData = useMemo(() => getDistributionSeries(records), [records])
   const emotionAverageData = useMemo(() => getEmotionAverageSeries(records), [records])
+  const timePeriodData = useMemo(() => getTimePeriodSeries(records), [records])
   const selectedRecord = useMemo(
     () => records.find((record) => record.id === selectedRecordId) ?? null,
     [records, selectedRecordId],
@@ -125,9 +128,11 @@ function App() {
         sources: {
           distribution: distributionChartRef.current,
           emotion: emotionChartRef.current,
+          timePeriod: timePeriodChartRef.current,
           trend: trendChartRef.current,
         },
         summary,
+        timePeriodData,
         trendData,
       })
 
@@ -140,7 +145,9 @@ function App() {
         ? trendChartRef.current
         : target === 'distribution'
           ? distributionChartRef.current
-          : emotionChartRef.current
+          : target === 'emotion'
+            ? emotionChartRef.current
+            : timePeriodChartRef.current
 
     if (!chart || !source) {
       throw new Error('目前找不到可輸出的圖表，請稍後再試一次。')
@@ -186,6 +193,8 @@ function App() {
           distributionData={distributionData}
           emotionAverageData={emotionAverageData}
           emotionChartRef={emotionChartRef}
+          timePeriodChartRef={timePeriodChartRef}
+          timePeriodData={timePeriodData}
           trendChartRef={trendChartRef}
           trendData={trendData}
         />
