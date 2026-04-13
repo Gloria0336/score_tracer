@@ -24,8 +24,18 @@ function sortByRecordedAtAsc(records: ScoreRecord[]): ScoreRecord[] {
   )
 }
 
+function getRecordedHour(recordedAt: string): number {
+  const matched = recordedAt.match(/T(\d{2}):\d{2}/)
+
+  if (matched) {
+    return Number(matched[1])
+  }
+
+  return new Date(recordedAt).getHours()
+}
+
 function getTimePeriodKey(recordedAt: string): TimePeriodKey {
-  const hour = new Date(recordedAt).getHours()
+  const hour = getRecordedHour(recordedAt)
 
   if (hour >= 8 && hour < 12) {
     return 'morning'
