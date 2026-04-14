@@ -25,6 +25,11 @@ function sortByRecordedAtAsc(records: ScoreRecord[]): ScoreRecord[] {
 }
 
 function getRecordedHour(recordedAt: string): number {
+  const offsetHourMatch = recordedAt.match(/T(\d{2}):\d{2}(?::\d{2}(?:\.\d+)?)?[+-]\d{2}:\d{2}$/)
+  if (offsetHourMatch) {
+    return Number(offsetHourMatch[1])
+  }
+
   return new Date(recordedAt).getHours()
 }
 
