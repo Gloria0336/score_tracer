@@ -25,12 +25,6 @@ function sortByRecordedAtAsc(records: ScoreRecord[]): ScoreRecord[] {
 }
 
 function getRecordedHour(recordedAt: string): number {
-  const matched = recordedAt.match(/T(\d{2}):\d{2}/)
-
-  if (matched) {
-    return Number(matched[1])
-  }
-
   return new Date(recordedAt).getHours()
 }
 
@@ -88,6 +82,7 @@ export function getTrendSeries(records: ScoreRecord[]): TrendPoint[] {
     id: record.id,
     score: record.score,
     recordedAt: record.recordedAt,
+    timestamp: new Date(record.recordedAt).getTime(),
     label: formatChartLabel(record.recordedAt),
   }))
 }

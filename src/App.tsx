@@ -5,6 +5,7 @@ import { RecordList } from './components/RecordList'
 import { RecordModal } from './components/RecordModal'
 import { ScoreForm } from './components/ScoreForm'
 import { SummaryCards } from './components/SummaryCards'
+import { TrendChartModal } from './components/TrendChartModal'
 import type { ScoreRecord, ScoreRecordInput } from './types'
 import {
   getDistributionSeries,
@@ -37,6 +38,7 @@ function createRecord(input: ScoreRecordInput): ScoreRecord {
 function App() {
   const [records, setRecords] = useState<ScoreRecord[]>(() => sortByRecordedAtDesc(loadRecords()))
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null)
+  const [isTrendDetailOpen, setIsTrendDetailOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const trendChartRef = useRef<HTMLElement | null>(null)
   const distributionChartRef = useRef<HTMLElement | null>(null)
@@ -193,6 +195,7 @@ function App() {
           distributionData={distributionData}
           emotionAverageData={emotionAverageData}
           emotionChartRef={emotionChartRef}
+          onOpenTrendDetail={() => setIsTrendDetailOpen(true)}
           timePeriodChartRef={timePeriodChartRef}
           timePeriodData={timePeriodData}
           trendChartRef={trendChartRef}
@@ -214,6 +217,15 @@ function App() {
           onClose={() => setSelectedRecordId(null)}
           onDelete={handleDelete}
           onSave={handleUpdateRecord}
+        />
+      ) : null}
+
+      {isTrendDetailOpen && trendData.length > 0 ? (
+        <TrendChartModal
+          data={trendData}
+          subtitle="左右滑動查看不同時間範圍，並可用縮放調整檢視比例。"
+          title="分數趨勢圖"
+          onClose={() => setIsTrendDetailOpen(false)}
         />
       ) : null}
     </div>
