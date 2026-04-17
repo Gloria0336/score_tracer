@@ -99,9 +99,7 @@ function App() {
 
   useEffect(() => {
     saveRecords(records)
-  }, [records])
 
-  useEffect(() => {
     if (!hasHydratedRecordsRef.current) {
       hasHydratedRecordsRef.current = true
       return
@@ -110,7 +108,7 @@ function App() {
     if (backupConfig.autoBackup) {
       queueGitHubBackup('auto')
     }
-  }, [records])
+  }, [backupConfig.autoBackup, records])
 
   useEffect(() => {
     if (currentPage > totalPages) {

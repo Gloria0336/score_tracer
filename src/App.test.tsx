@@ -29,14 +29,6 @@ function getSubmitButton() {
   return document.querySelector('button[type="submit"]') as HTMLButtonElement
 }
 
-function getBackupTokenInput() {
-  return document.querySelector('input[type="password"]') as HTMLInputElement
-}
-
-function getAutoBackupCheckbox() {
-  return document.querySelector('.backup-toggle input[type="checkbox"]') as HTMLInputElement
-}
-
 describe('App', () => {
   it('saves a new record to localStorage', async () => {
     const user = userEvent.setup()
@@ -115,8 +107,8 @@ describe('App', () => {
     await user.type(screen.getByLabelText('Branch'), 'main')
     await user.clear(screen.getByLabelText('Backup Path'))
     await user.type(screen.getByLabelText('Backup Path'), 'backups/records.json')
-    await user.type(getBackupTokenInput(), 'secret-token')
-    await user.click(getAutoBackupCheckbox())
+    await user.type(screen.getByLabelText('Personal Access Token'), 'secret-token')
+    await user.click(screen.getByLabelText('Auto backup after every data change'))
 
     await user.type(getScoreInput(), '8')
     await user.click(getSubmitButton())
