@@ -1,8 +1,16 @@
 {
   "app": "score-tracer",
-  "committedAt": "2026-04-17T02:46:41.156Z",
-  "recordCount": 25,
+  "committedAt": "2026-04-17T02:48:33.988Z",
+  "recordCount": 26,
   "records": [
+    {
+      "id": "8217c1cf-f6c2-4872-85a7-3397ed1fbd74",
+      "createdAt": "2026-04-17T02:48:33.957Z",
+      "score": 6,
+      "emotion": 3,
+      "note": "定時紀錄",
+      "recordedAt": "2026-04-17T02:43:00.000Z"
+    },
     {
       "id": "5aea3654-9e87-4075-96b2-22015e29b35a",
       "score": 6,
