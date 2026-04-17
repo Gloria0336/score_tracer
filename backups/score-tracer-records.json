@@ -1,8 +1,16 @@
 {
   "app": "score-tracer",
-  "committedAt": "2026-04-17T09:02:34.227Z",
-  "recordCount": 28,
+  "committedAt": "2026-04-17T11:37:18.707Z",
+  "recordCount": 29,
   "records": [
+    {
+      "id": "499ab115-a40c-400f-bc4f-ebce01fb72bb",
+      "createdAt": "2026-04-17T11:37:18.654Z",
+      "score": 8,
+      "emotion": 4,
+      "note": "下班開心但還是很想",
+      "recordedAt": "2026-04-17T09:02:00.000Z"
+    },
     {
       "id": "edaf0ced-cc39-4eda-9a61-e0852ff66231",
       "createdAt": "2026-04-17T09:02:34.200Z",
