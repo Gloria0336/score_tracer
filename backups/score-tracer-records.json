@@ -1,0 +1,208 @@
+{
+  "app": "score-tracer",
+  "committedAt": "2026-04-17T02:46:41.156Z",
+  "recordCount": 25,
+  "records": [
+    {
+      "id": "5aea3654-9e87-4075-96b2-22015e29b35a",
+      "score": 6,
+      "emotion": 4,
+      "note": "定時紀錄",
+      "recordedAt": "2026-04-16T16:52:00.000Z",
+      "createdAt": "2026-04-16T16:52:46.667Z"
+    },
+    {
+      "id": "a7dca74c-673c-426d-baa1-126435fb623a",
+      "score": 5,
+      "emotion": 4,
+      "note": "平靜但還好",
+      "recordedAt": "2026-04-16T10:51:00.000Z",
+      "createdAt": "2026-04-16T16:52:03.592Z"
+    },
+    {
+      "id": "2840befc-73c3-4144-96d4-a4a23842d11a",
+      "score": 8,
+      "emotion": 2,
+      "note": "今天想整天",
+      "recordedAt": "2026-04-15T16:10:00.000Z",
+      "createdAt": "2026-04-15T16:11:34.974Z"
+    },
+    {
+      "id": "4227fcfe-e41f-4137-b7e8-7ac4de581ecc",
+      "score": 8,
+      "emotion": 2,
+      "note": "今天想整天",
+      "recordedAt": "2026-04-15T08:10:00.000Z",
+      "createdAt": "2026-04-15T16:10:47.910Z"
+    },
+    {
+      "id": "ad768917-377c-498a-948b-01745d57bb75",
+      "score": 7,
+      "emotion": 3,
+      "note": "感覺有放電會稍微沒那麼想，或是只是注意力被轉移？",
+      "recordedAt": "2026-04-14T15:29:00.000Z",
+      "createdAt": "2026-04-14T15:41:50.122Z"
+    },
+    {
+      "id": "dbf7e450-ba72-4a23-8b2e-cd5af2d1efd1",
+      "score": 9,
+      "emotion": 3,
+      "note": "感覺越來越強烈",
+      "recordedAt": "2026-04-14T13:47:00.000Z",
+      "createdAt": "2026-04-14T13:48:10.864Z"
+    },
+    {
+      "id": "afa00a9a-736d-4664-aa16-eb29ef3aa24d",
+      "score": 7,
+      "emotion": 3,
+      "note": "從早到晚都在想",
+      "recordedAt": "2026-04-13T15:05:00.000Z",
+      "createdAt": "2026-04-13T15:06:22.918Z"
+    },
+    {
+      "id": "ffdb5fb2-5f29-43d8-97bd-450f9e7a7c04",
+      "score": 9,
+      "emotion": 2,
+      "note": "就突然好想",
+      "recordedAt": "2026-04-13T09:23:00.000Z",
+      "createdAt": "2026-04-13T09:24:44.570Z"
+    },
+    {
+      "id": "e0493279-334a-4309-abdc-49272d519df3",
+      "score": 8,
+      "emotion": 3,
+      "note": "突然就很想",
+      "recordedAt": "2026-04-13T02:00:00.000Z",
+      "createdAt": "2026-04-13T02:45:38.808Z"
+    },
+    {
+      "id": "84fc8f86-865d-4360-94a8-d8a45155246e",
+      "score": 10,
+      "emotion": 5,
+      "note": "剛剛嘗試化妝跟除了毛，突然覺得異常開心",
+      "recordedAt": "2026-04-11T19:53:00.000Z",
+      "createdAt": "2026-04-11T19:54:24.071Z"
+    },
+    {
+      "id": "9ed67120-1f2a-4011-94f0-9134e5c3fc22",
+      "score": 9,
+      "emotion": 1,
+      "note": "跟家人在一起就很消耗社交能量",
+      "recordedAt": "2026-04-11T17:48:00.000Z",
+      "createdAt": "2026-04-11T17:49:21.580Z"
+    },
+    {
+      "id": "5c1a4870-50d7-4b27-9ced-3b7dd6d4d922",
+      "score": 8,
+      "emotion": 2,
+      "note": "突然覺得很鬱卒，應該是受那件事影響",
+      "recordedAt": "2026-04-11T10:03:00.000Z",
+      "createdAt": "2026-04-11T10:03:41.319Z"
+    },
+    {
+      "id": "a98e446a-7023-4a66-9b84-9d3a0cfcb027",
+      "score": 7,
+      "emotion": 4,
+      "note": "本來不錯突然間想了",
+      "recordedAt": "2026-04-10T06:28:00.000Z",
+      "createdAt": "2026-04-10T06:29:26.442Z"
+    },
+    {
+      "id": "c692a50b-8c93-444e-a52f-d1f300589252",
+      "score": 6,
+      "emotion": 4,
+      "note": "今天跟諮商師透露心聲，感覺有發洩一些心情",
+      "recordedAt": "2026-04-09T16:52:00.000Z",
+      "createdAt": "2026-04-09T16:53:06.583Z"
+    },
+    {
+      "id": "4491350a-284c-446f-a6dc-e103e9b49df4",
+      "score": 6,
+      "emotion": 3,
+      "note": "突然想到感受一下的紀錄",
+      "recordedAt": "2026-04-09T03:02:00.000Z",
+      "createdAt": "2026-04-09T03:02:31.365Z"
+    },
+    {
+      "id": "2cb93722-65ff-4717-baa7-dc19e06ebabf",
+      "score": 4,
+      "emotion": 1,
+      "note": "就是憂鬱",
+      "recordedAt": "2026-04-08T11:44:00.000Z",
+      "createdAt": "2026-04-08T11:55:37.786Z"
+    },
+    {
+      "id": "178472b1-aa00-46fe-bdab-7a545dd2f6fb",
+      "score": 6,
+      "emotion": 2,
+      "note": "不知為何就是心情低落",
+      "recordedAt": "2026-04-08T10:45:00.000Z",
+      "createdAt": "2026-04-08T10:45:55.118Z"
+    },
+    {
+      "id": "8f599e98-d56b-477b-8386-2bca197d230b",
+      "score": 6,
+      "emotion": 3,
+      "note": "想到的時候就會想，沒特別去想這件事就還好",
+      "recordedAt": "2026-04-08T08:21:00.000Z",
+      "createdAt": "2026-04-08T08:21:39.833Z"
+    },
+    {
+      "id": "4fd3c8de-cfae-41ac-8adb-70e250b2c5c6",
+      "score": 6,
+      "emotion": 1,
+      "note": "早上心情極差，現在有好一點",
+      "recordedAt": "2026-04-08T02:12:00.000Z",
+      "createdAt": "2026-04-08T02:14:52.769Z"
+    },
+    {
+      "id": "3f6ac780-d7bb-43a5-8bd1-43e0ce7bed20",
+      "score": 4,
+      "emotion": 0,
+      "note": "非常難過但沒有想變成女生的想法，只有想死的想法",
+      "recordedAt": "2026-04-07T17:45:00.000Z",
+      "createdAt": "2026-04-07T17:46:15.863Z"
+    },
+    {
+      "id": "5df0a884-52f2-48aa-a014-3ba0101c7a8c",
+      "score": 5,
+      "emotion": 2,
+      "note": "自己一人",
+      "recordedAt": "2026-04-07T12:43:00.000Z",
+      "createdAt": "2026-04-07T12:44:14.071Z"
+    },
+    {
+      "id": "0f2aa577-35f9-41f0-9a82-94cda2b99895",
+      "score": 3,
+      "emotion": 3,
+      "note": "因為今天蠻多事要做所以沒有特別想",
+      "recordedAt": "2026-04-06T17:47:00.000Z",
+      "createdAt": "2026-04-06T17:48:15.606Z"
+    },
+    {
+      "id": "b1d00bf3-083c-4261-8989-cb4ae6f47379",
+      "score": 7,
+      "emotion": 3,
+      "note": "睡醒滑一下手機之後突然就蠻想的",
+      "recordedAt": "2026-04-06T06:38:00.000Z",
+      "createdAt": "2026-04-06T06:39:10.413Z"
+    },
+    {
+      "id": "94f81893-d03a-4ede-affe-d563acda8ba8",
+      "score": 7,
+      "emotion": 1,
+      "note": "心情不知為何不太好",
+      "recordedAt": "2026-04-05T10:41:00.000Z",
+      "createdAt": "2026-04-05T20:41:55.791Z"
+    },
+    {
+      "id": "c70f1279-c1ee-4ad5-833c-c9ceccaefe15",
+      "score": 3,
+      "emotion": 5,
+      "note": "放假蠻開心的又去看電影所以心情不錯",
+      "recordedAt": "2026-04-04T14:40:00.000Z",
+      "createdAt": "2026-04-05T20:41:05.829Z"
+    }
+  ],
+  "schemaVersion": 1
+}
