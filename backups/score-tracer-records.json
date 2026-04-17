@@ -1,23 +1,31 @@
 {
   "app": "score-tracer",
-  "committedAt": "2026-04-17T11:37:18.707Z",
-  "recordCount": 29,
+  "committedAt": "2026-04-17T17:46:56.362Z",
+  "recordCount": 30,
   "records": [
     {
+      "id": "20e87636-adf3-4454-86c4-9eede3cf3f36",
+      "createdAt": "2026-04-17T17:46:56.320Z",
+      "score": 7,
+      "emotion": 3,
+      "note": "臨時紀錄",
+      "recordedAt": "2026-04-17T17:46:00.000Z"
+    },
+    {
       "id": "499ab115-a40c-400f-bc4f-ebce01fb72bb",
-      "createdAt": "2026-04-17T11:37:18.654Z",
       "score": 8,
       "emotion": 4,
       "note": "下班開心但還是很想",
-      "recordedAt": "2026-04-17T09:02:00.000Z"
+      "recordedAt": "2026-04-17T09:02:00.000Z",
+      "createdAt": "2026-04-17T11:37:18.654Z"
     },
     {
       "id": "edaf0ced-cc39-4eda-9a61-e0852ff66231",
-      "createdAt": "2026-04-17T09:02:34.200Z",
       "score": 8,
       "emotion": 3,
       "note": "突發感想",
-      "recordedAt": "2026-04-17T09:02:00.000Z"
+      "recordedAt": "2026-04-17T09:02:00.000Z",
+      "createdAt": "2026-04-17T09:02:34.200Z"
     },
     {
       "id": "bb0593c3-81f9-4937-83aa-dd09e07e88c1",
