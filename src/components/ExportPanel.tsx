@@ -44,6 +44,7 @@ export function ExportPanel({
   const [isWorking, setIsWorking] = useState(false)
   const [message, setMessage] = useState(DEFAULT_MESSAGE)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const personalAccessTokenHintId = 'github-token-hint'
 
   const hasRecords = records.length > 0
   const backupReady = isGitHubBackupConfigured(backupConfig)
@@ -236,17 +237,21 @@ export function ExportPanel({
             />
           </label>
 
-          <label className="field backup-grid__full">
-            <span>Personal Access Token</span>
+          <div className="field backup-grid__full">
+            <label htmlFor="github-personal-access-token">
+              <span>Personal Access Token</span>
+            </label>
             <input
+              id="github-personal-access-token"
+              aria-describedby={personalAccessTokenHintId}
               autoComplete="off"
               placeholder="github_pat_..."
               type="password"
               value={backupConfig.token}
               onChange={(event) => onBackupConfigChange({ token: event.target.value })}
             />
-            <small>Use a token with repository contents write permission.</small>
-          </label>
+            <small id={personalAccessTokenHintId}>Use a token with repository contents write permission.</small>
+          </div>
         </div>
 
         <label className="backup-toggle">
