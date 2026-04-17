@@ -386,6 +386,13 @@ button {
   font-size: 1.2rem;
 }
 
+.chart-card__head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
 .chart-card__head p {
   margin: 6px 0 0;
   color: var(--muted);
@@ -543,6 +550,10 @@ button {
   box-shadow: 0 28px 64px rgba(16, 32, 51, 0.24);
 }
 
+.modal-card--wide {
+  width: min(1120px, 100%);
+}
+
 .modal-head {
   display: flex;
   align-items: start;
@@ -607,6 +618,61 @@ button {
   margin-top: 18px;
 }
 
+.trend-modal {
+  max-height: min(90vh, 920px);
+  display: grid;
+  gap: 18px;
+}
+
+.trend-modal__subtitle {
+  margin-top: 8px;
+  max-width: 60ch;
+}
+
+.trend-modal__controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  align-items: end;
+}
+
+.trend-control {
+  display: grid;
+  gap: 8px;
+  color: var(--accent-dark);
+  font-weight: 700;
+}
+
+.trend-control input {
+  width: 100%;
+}
+
+.trend-modal__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.trend-modal__viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 18px 18px 10px;
+  border-radius: 24px;
+  border: 1px solid rgba(16, 32, 51, 0.08);
+  background: rgba(255, 255, 255, 0.78);
+  scroll-behavior: smooth;
+}
+
+.trend-modal__viewport:focus {
+  outline: 2px solid rgba(217, 72, 95, 0.28);
+  outline-offset: 4px;
+}
+
+.trend-modal__canvas {
+  min-width: 100%;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -658,9 +724,14 @@ button {
   .records-panel__head,
   .pagination,
   .form-actions,
-  .modal-actions {
+  .modal-actions,
+  .trend-modal__nav {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .trend-modal__controls {
+    grid-template-columns: 1fr;
   }
 
   .danger-button {

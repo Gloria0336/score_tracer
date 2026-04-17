@@ -24,6 +24,7 @@ export type TrendPoint = {
   id: string
   score: number
   recordedAt: string
+  timestamp: number
   label: string
 }
 

@@ -50,7 +50,23 @@ describe('analytics helpers', () => {
   })
 
   it('creates trend and rounded distribution series', () => {
-    expect(getTrendSeries(records)).toHaveLength(3)
+    expect(getTrendSeries(records)).toEqual([
+      expect.objectContaining({
+        id: 'a',
+        score: 7.4,
+        timestamp: new Date('2026-04-05T08:30:00.000Z').getTime(),
+      }),
+      expect.objectContaining({
+        id: 'b',
+        score: 10.2,
+        timestamp: new Date('2026-04-06T08:30:00.000Z').getTime(),
+      }),
+      expect.objectContaining({
+        id: 'c',
+        score: 8.8,
+        timestamp: new Date('2026-04-07T08:30:00.000Z').getTime(),
+      }),
+    ])
     expect(getDistributionSeries(records)).toEqual([
       { bucket: '7 分', count: 1 },
       { bucket: '9 分', count: 1 },

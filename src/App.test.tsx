@@ -53,6 +53,29 @@ describe('App', () => {
     expect(saved).toContain('backup smoke test')
   })
 
+  it('opens the trend chart detail modal', async () => {
+    const user = userEvent.setup()
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([
+        {
+          id: 'trend-record',
+          score: 9,
+          emotion: 3,
+          note: '',
+          recordedAt: '2026-04-07T09:30:00.000Z',
+          createdAt: '2026-04-07T09:30:00.000Z',
+        },
+      ]),
+    )
+
+    render(<App />)
+    await user.click(screen.getByRole('button', { name: '放大檢視' }))
+
+    expect(screen.getByRole('dialog', { name: '分數趨勢圖放大檢視' })).toBeInTheDocument()
+    expect(screen.getByText('時間縮放 140%')).toBeInTheDocument()
+  })
+
   it('loads broken localStorage data safely', () => {
     window.localStorage.setItem(STORAGE_KEY, '{broken json')
     render(<App />)

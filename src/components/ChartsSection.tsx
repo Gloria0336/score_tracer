@@ -6,21 +6,21 @@ import {
   Cell,
   ComposedChart,
   Line,
-  LineChart,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
+  ResponsiveContainer,
 } from 'recharts'
 import type { DistributionPoint, EmotionAveragePoint, TimePeriodPoint, TrendPoint } from '../types'
-import { formatDateTime } from '../utils/datetime'
 import { CHART_EXPORTS } from '../utils/reportImage'
+import { TrendChart } from './TrendChart'
 
 type ChartsSectionProps = {
   distributionChartRef: RefObject<HTMLElement | null>
   distributionData: DistributionPoint[]
   emotionAverageData: EmotionAveragePoint[]
   emotionChartRef: RefObject<HTMLElement | null>
+  onOpenTrendDetail: () => void
   timePeriodChartRef: RefObject<HTMLElement | null>
   timePeriodData: TimePeriodPoint[]
   trendChartRef: RefObject<HTMLElement | null>
@@ -73,6 +73,7 @@ export function ChartsSection({
   distributionData,
   emotionAverageData,
   emotionChartRef,
+  onOpenTrendDetail,
   timePeriodChartRef,
   timePeriodData,
   trendChartRef,
@@ -95,34 +96,24 @@ export function ChartsSection({
       <div className="charts-grid">
         <article className="chart-card" ref={trendChartRef}>
           <div className="chart-card__head">
-            <h3>{trendMeta.title}</h3>
-            <p>{trendMeta.subtitle}</p>
+            <div>
+              <h3>{trendMeta.title}</h3>
+              <p>{trendMeta.subtitle}</p>
+            </div>
+            {trendData.length > 0 ? (
+              <button
+                aria-label="放大檢視"
+                className="secondary-button"
+                type="button"
+                onClick={onOpenTrendDetail}
+              >
+                放大檢視
+              </button>
+            ) : null}
           </div>
           {trendData.length > 0 ? (
             <div className="chart-shell">
-              <ResponsiveContainer width="100%" height={280}>
-                <LineChart data={trendData} margin={{ top: 12, right: 18, left: -12, bottom: 0 }}>
-                  <CartesianGrid stroke="rgba(17, 24, 39, 0.08)" vertical={false} />
-                  <XAxis dataKey="label" tickLine={false} axisLine={false} />
-                  <YAxis domain={[0, 20]} tickLine={false} axisLine={false} />
-                  <Tooltip
-                    formatter={formatScoreTooltip}
-                    labelFormatter={(_, payload) =>
-                      payload?.[0]?.payload?.recordedAt
-                        ? formatDateTime(payload[0].payload.recordedAt)
-                        : ''
-                    }
-                  />
-                  <Line
-                    dataKey="score"
-                    stroke="#D9485F"
-                    strokeWidth={3}
-                    dot={{ fill: '#16324F', r: 4 }}
-                    activeDot={{ r: 6 }}
-                    type="monotone"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              <TrendChart data={trendData} height={280} />
             </div>
           ) : (
             <div className="empty-chart">尚未有足夠資料可建立趨勢圖。</div>
