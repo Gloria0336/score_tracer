@@ -6,27 +6,47 @@ import {
   type ExportDeliveryResult,
   type ExportFormat,
 } from '../utils/export'
+import { isGitHubBackupConfigured, type GitHubBackupConfig } from '../utils/githubBackup'
 import { CHART_EXPORTS, type ChartExportKey } from '../utils/reportImage'
 
 type ExportPanelProps = {
+  backupConfig: GitHubBackupConfig
+  backupStatusCommitUrl?: string
+  backupStatusMessage: string
+  backupStatusTone: 'idle' | 'working' | 'success' | 'error'
+  isBackingUp: boolean
+  onBackupConfigChange: (patch: Partial<GitHubBackupConfig>) => void
   onExportImage:
     | ((target: ChartExportKey | 'report') => Promise<ExportDeliveryResult>)
     | ((target: ChartExportKey | 'report') => ExportDeliveryResult)
-  records: ScoreRecord[]
   onImport: (
     content: string,
     fileName: string,
   ) => Promise<{ importedCount: number; skippedCount: number }> | { importedCount: number; skippedCount: number }
+  onManualBackup: () => void
+  records: ScoreRecord[]
 }
 
-const DEFAULT_MESSAGE = '可匯出 JSON、CSV、單張圖表 JPG 與 A4 圖像報告，也支援從 JSON / CSV 匯入。'
+const DEFAULT_MESSAGE = 'Use JSON or CSV export and import, or save chart images and the A4 report as JPG.'
 
-export function ExportPanel({ onExportImage, records, onImport }: ExportPanelProps) {
+export function ExportPanel({
+  backupConfig,
+  backupStatusCommitUrl,
+  backupStatusMessage,
+  backupStatusTone,
+  isBackingUp,
+  onBackupConfigChange,
+  onExportImage,
+  onImport,
+  onManualBackup,
+  records,
+}: ExportPanelProps) {
   const [isWorking, setIsWorking] = useState(false)
   const [message, setMessage] = useState(DEFAULT_MESSAGE)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const hasRecords = records.length > 0
+  const backupReady = isGitHubBackupConfigured(backupConfig)
 
   const handleExport = async (format: ExportFormat) => {
     if (!hasRecords || isWorking) {
@@ -38,9 +58,9 @@ export function ExportPanel({ onExportImage, records, onImport }: ExportPanelPro
     try {
       const payload = buildExportPayload(records, format)
       const result = await deliverExportFile(payload)
-      setMessage(describeDeliveryResult(result, format === 'json' ? 'JSON 檔案' : 'CSV 檔案'))
+      setMessage(describeDeliveryResult(result, format === 'json' ? 'JSON file' : 'CSV file'))
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : '檔案匯出失敗，請稍後再試一次。')
+      setMessage(error instanceof Error ? error.message : 'Export failed.')
     } finally {
       setIsWorking(false)
     }
@@ -55,9 +75,9 @@ export function ExportPanel({ onExportImage, records, onImport }: ExportPanelPro
 
     try {
       const result = await onExportImage(target)
-      setMessage(describeDeliveryResult(result, target === 'report' ? 'A4 報告 JPG' : '圖表 JPG'))
+      setMessage(describeDeliveryResult(result, target === 'report' ? 'A4 report JPG' : 'Chart JPG'))
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : '圖片匯出失敗，請稍後再試一次。')
+      setMessage(error instanceof Error ? error.message : 'Image export failed.')
     } finally {
       setIsWorking(false)
     }
@@ -84,96 +104,197 @@ export function ExportPanel({ onExportImage, records, onImport }: ExportPanelPro
       const result = await onImport(content, file.name)
       setMessage(
         result.skippedCount > 0
-          ? `已匯入 ${result.importedCount} 筆資料，略過 ${result.skippedCount} 筆格式不完整的項目。`
-          : `已成功匯入 ${result.importedCount} 筆資料。`,
+          ? `Imported ${result.importedCount} records and skipped ${result.skippedCount} invalid rows.`
+          : `Imported ${result.importedCount} records successfully.`,
       )
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : '匯入失敗，請確認檔案內容後再試一次。')
+      setMessage(error instanceof Error ? error.message : 'Import failed.')
     } finally {
       setIsWorking(false)
     }
   }
 
   return (
-    <section className="export-block" aria-label="資料匯入與匯出">
-      <div>
-        <p className="eyebrow">Import / Export</p>
-        <h3>資料與報告輸出</h3>
-        <p className="helper-copy">
-          JSON / CSV 適合備份與整理原始資料，JPG 影像則適合快速分享圖表與 A4 版面報告。
-        </p>
-      </div>
+    <div className="export-stack">
+      <section className="export-block" aria-label="import-export">
+        <div>
+          <p className="eyebrow">Import / Export</p>
+          <h3>Save and restore your data</h3>
+          <p className="helper-copy">
+            Export JSON or CSV, import an earlier backup, or save the charts and report as image files.
+          </p>
+        </div>
 
-      <div className="export-actions">
-        <button
-          className="secondary-button"
-          disabled={!hasRecords || isWorking}
-          type="button"
-          onClick={() => void handleExport('json')}
-        >
-          匯出 JSON
-        </button>
-        <button
-          className="secondary-button"
-          disabled={!hasRecords || isWorking}
-          type="button"
-          onClick={() => void handleExport('csv')}
-        >
-          匯出 CSV
-        </button>
-        <button className="secondary-button" disabled={isWorking} type="button" onClick={handleChooseFile}>
-          匯入資料
-        </button>
-        <input
-          ref={fileInputRef}
-          accept=".json,.csv,application/json,text/csv"
-          className="visually-hidden"
-          type="file"
-          onChange={(event) => void handleImportFile(event)}
-        />
-      </div>
-
-      <div className="export-actions export-actions--images">
-        {CHART_EXPORTS.map((chart) => (
+        <div className="export-actions">
           <button
-            key={chart.key}
             className="secondary-button"
             disabled={!hasRecords || isWorking}
             type="button"
-            onClick={() => void handleImageExport(chart.key)}
+            onClick={() => void handleExport('json')}
           >
-            {chart.buttonLabel}
+            Export JSON
           </button>
-        ))}
-        <button
-          className="secondary-button"
-          disabled={!hasRecords || isWorking}
-          type="button"
-          onClick={() => void handleImageExport('report')}
-        >
-          匯出 A4 報告 JPG
-        </button>
-      </div>
+          <button
+            className="secondary-button"
+            disabled={!hasRecords || isWorking}
+            type="button"
+            onClick={() => void handleExport('csv')}
+          >
+            Export CSV
+          </button>
+          <button className="secondary-button" disabled={isWorking} type="button" onClick={handleChooseFile}>
+            Import file
+          </button>
+          <input
+            ref={fileInputRef}
+            accept=".json,.csv,application/json,text/csv"
+            className="visually-hidden"
+            type="file"
+            onChange={(event) => void handleImportFile(event)}
+          />
+        </div>
 
-      <p className="helper-copy export-status" role="status">
-        {message}
-      </p>
-    </section>
+        <div className="export-actions export-actions--images">
+          {CHART_EXPORTS.map((chart) => (
+            <button
+              key={chart.key}
+              className="secondary-button"
+              disabled={!hasRecords || isWorking}
+              type="button"
+              onClick={() => void handleImageExport(chart.key)}
+            >
+              {chart.buttonLabel}
+            </button>
+          ))}
+          <button
+            className="secondary-button"
+            disabled={!hasRecords || isWorking}
+            type="button"
+            onClick={() => void handleImageExport('report')}
+          >
+            Export A4 report JPG
+          </button>
+        </div>
+
+        <p className="helper-copy export-status" role="status">
+          {message}
+        </p>
+      </section>
+
+      <section className="export-block" aria-label="github-backup">
+        <div>
+          <p className="eyebrow">GitHub Backup</p>
+          <h3>Sync the full data set to GitHub</h3>
+          <p className="helper-copy">
+            The app writes all records into one JSON file in your repository. The Personal Access Token is stored only
+            in this browser localStorage.
+          </p>
+        </div>
+
+        <div className="backup-grid">
+          <label className="field field--compact">
+            <span>GitHub Owner</span>
+            <input
+              autoComplete="off"
+              placeholder="gloria0336"
+              type="text"
+              value={backupConfig.owner}
+              onChange={(event) => onBackupConfigChange({ owner: event.target.value })}
+            />
+          </label>
+
+          <label className="field field--compact">
+            <span>Repository</span>
+            <input
+              autoComplete="off"
+              placeholder="score_tracer"
+              type="text"
+              value={backupConfig.repo}
+              onChange={(event) => onBackupConfigChange({ repo: event.target.value })}
+            />
+          </label>
+
+          <label className="field field--compact">
+            <span>Branch</span>
+            <input
+              autoComplete="off"
+              placeholder="main"
+              type="text"
+              value={backupConfig.branch}
+              onChange={(event) => onBackupConfigChange({ branch: event.target.value })}
+            />
+          </label>
+
+          <label className="field field--compact">
+            <span>Backup Path</span>
+            <input
+              autoComplete="off"
+              placeholder="backups/score-tracer-records.json"
+              type="text"
+              value={backupConfig.path}
+              onChange={(event) => onBackupConfigChange({ path: event.target.value })}
+            />
+          </label>
+
+          <label className="field backup-grid__full">
+            <span>Personal Access Token</span>
+            <input
+              autoComplete="off"
+              placeholder="github_pat_..."
+              type="password"
+              value={backupConfig.token}
+              onChange={(event) => onBackupConfigChange({ token: event.target.value })}
+            />
+            <small>Use a token with repository contents write permission.</small>
+          </label>
+        </div>
+
+        <label className="backup-toggle">
+          <input
+            checked={backupConfig.autoBackup}
+            type="checkbox"
+            onChange={(event) => onBackupConfigChange({ autoBackup: event.target.checked })}
+          />
+          <span>Auto backup after every data change</span>
+        </label>
+
+        <div className="export-actions">
+          <button className="primary-button" disabled={isBackingUp} type="button" onClick={onManualBackup}>
+            {isBackingUp ? 'Backing up...' : 'Backup to GitHub now'}
+          </button>
+          <span className={`backup-badge ${backupReady ? 'backup-badge--ready' : 'backup-badge--pending'}`}>
+            {backupReady ? 'Ready to sync' : 'Setup required'}
+          </span>
+        </div>
+
+        <p className={`helper-copy export-status backup-status backup-status--${backupStatusTone}`} role="status">
+          {backupStatusMessage}
+        </p>
+
+        {backupStatusCommitUrl ? (
+          <p className="helper-copy backup-link">
+            <a href={backupStatusCommitUrl} rel="noreferrer" target="_blank">
+              View the GitHub commit
+            </a>
+          </p>
+        ) : null}
+      </section>
+    </div>
   )
 }
 
 function describeDeliveryResult(result: ExportDeliveryResult, label: string) {
   if (result === 'shared') {
-    return `${label} 已送到系統分享面板，可直接分享到 iPhone 相簿或通訊軟體。`
+    return `${label} was shared.`
   }
 
   if (result === 'opened') {
-    return `${label} 已在新分頁開啟，可繼續儲存或分享。`
+    return `${label} was opened in a new tab.`
   }
 
   if (result === 'downloaded') {
-    return `${label} 已開始下載。`
+    return `${label} was downloaded.`
   }
 
-  return `${label} 匯出已取消。`
+  return `${label} export was cancelled.`
 }

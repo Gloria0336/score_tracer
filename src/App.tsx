@@ -15,6 +15,13 @@ import {
   sortByRecordedAtDesc,
 } from './utils/analytics'
 import { deliverBinaryExportFile, type ExportDeliveryResult } from './utils/export'
+import {
+  backupRecordsToGitHub,
+  loadGitHubBackupConfig,
+  saveGitHubBackupConfig,
+  type GitHubBackupConfig,
+  type GitHubBackupTrigger,
+} from './utils/githubBackup'
 import { parseImportedRecords } from './utils/import'
 import {
   buildA4ReportImagePayload,
@@ -25,6 +32,19 @@ import {
 import { loadRecords, saveRecords } from './utils/storage'
 
 const RECORDS_PER_PAGE = 10
+
+type BackupStatusTone = 'idle' | 'working' | 'success' | 'error'
+
+type BackupStatus = {
+  commitUrl?: string
+  message: string
+  tone: BackupStatusTone
+}
+
+const DEFAULT_BACKUP_STATUS: BackupStatus = {
+  message: 'Fill in the GitHub backup settings to enable manual backup and automatic sync after changes.',
+  tone: 'idle',
+}
 
 function createRecord(input: ScoreRecordInput): ScoreRecord {
   return {
@@ -38,14 +58,18 @@ function App() {
   const [records, setRecords] = useState<ScoreRecord[]>(() => sortByRecordedAtDesc(loadRecords()))
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [backupConfig, setBackupConfig] = useState<GitHubBackupConfig>(() => loadGitHubBackupConfig())
+  const [backupStatus, setBackupStatus] = useState<BackupStatus>(DEFAULT_BACKUP_STATUS)
+  const [isBackingUp, setIsBackingUp] = useState(false)
   const trendChartRef = useRef<HTMLElement | null>(null)
   const distributionChartRef = useRef<HTMLElement | null>(null)
   const emotionChartRef = useRef<HTMLElement | null>(null)
   const timePeriodChartRef = useRef<HTMLElement | null>(null)
-
-  useEffect(() => {
-    saveRecords(records)
-  }, [records])
+  const recordsRef = useRef(records)
+  const backupConfigRef = useRef(backupConfig)
+  const hasHydratedRecordsRef = useRef(false)
+  const backupInFlightRef = useRef(false)
+  const queuedBackupTriggerRef = useRef<GitHubBackupTrigger | null>(null)
 
   const summary = useMemo(() => getSummary(records), [records])
   const trendData = useMemo(() => getTrendSeries(records), [records])
@@ -61,6 +85,30 @@ function App() {
     const startIndex = (currentPage - 1) * RECORDS_PER_PAGE
     return records.slice(startIndex, startIndex + RECORDS_PER_PAGE)
   }, [currentPage, records])
+
+  useEffect(() => {
+    recordsRef.current = records
+  }, [records])
+
+  useEffect(() => {
+    backupConfigRef.current = backupConfig
+    saveGitHubBackupConfig(backupConfig)
+  }, [backupConfig])
+
+  useEffect(() => {
+    saveRecords(records)
+  }, [records])
+
+  useEffect(() => {
+    if (!hasHydratedRecordsRef.current) {
+      hasHydratedRecordsRef.current = true
+      return
+    }
+
+    if (backupConfig.autoBackup) {
+      queueGitHubBackup('auto')
+    }
+  }, [records])
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -150,7 +198,7 @@ function App() {
             : timePeriodChartRef.current
 
     if (!chart || !source) {
-      throw new Error('目前找不到可輸出的圖表，請稍後再試一次。')
+      throw new Error('The selected chart could not be exported.')
     }
 
     const payload = await buildChartImagePayload({
@@ -161,14 +209,88 @@ function App() {
     return deliverBinaryExportFile(payload)
   }
 
+  function queueGitHubBackup(trigger: GitHubBackupTrigger) {
+    if (backupInFlightRef.current) {
+      queuedBackupTriggerRef.current = trigger === 'manual' ? 'manual' : queuedBackupTriggerRef.current ?? 'auto'
+      setBackupStatus({
+        message: 'A backup is already running. The newest data will be synced again after it finishes.',
+        tone: 'working',
+      })
+      return
+    }
+
+    void runGitHubBackup(trigger)
+  }
+
+  async function runGitHubBackup(trigger: GitHubBackupTrigger) {
+    backupInFlightRef.current = true
+    setIsBackingUp(true)
+    setBackupStatus({
+      message:
+        trigger === 'manual'
+          ? 'Running manual backup to GitHub...'
+          : 'Detected data changes. Running automatic backup to GitHub...',
+      tone: 'working',
+    })
+
+    try {
+      const result = await backupRecordsToGitHub(recordsRef.current, backupConfigRef.current, { trigger })
+      const timestamp = new Date(result.committedAt).toLocaleString('en-US', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      })
+
+      setBackupStatus({
+        commitUrl: result.commitUrl,
+        message: `Automatic backup saved ${recordsRef.current.length} records to ${result.path} at ${timestamp}.`,
+        tone: 'success',
+      })
+
+      if (trigger === 'manual') {
+        setBackupStatus({
+          commitUrl: result.commitUrl,
+          message: `Manual backup saved ${recordsRef.current.length} records to ${result.path} at ${timestamp}.`,
+          tone: 'success',
+        })
+      }
+    } catch (error) {
+      setBackupStatus({
+        message: error instanceof Error ? error.message : 'GitHub backup failed.',
+        tone: 'error',
+      })
+    } finally {
+      backupInFlightRef.current = false
+      setIsBackingUp(false)
+
+      const queuedTrigger = queuedBackupTriggerRef.current
+      queuedBackupTriggerRef.current = null
+
+      if (queuedTrigger) {
+        void runGitHubBackup(queuedTrigger)
+      }
+    }
+  }
+
+  const handleManualBackup = () => {
+    queueGitHubBackup('manual')
+  }
+
+  const handleBackupConfigChange = (patch: Partial<GitHubBackupConfig>) => {
+    setBackupConfig((current) => ({
+      ...current,
+      ...patch,
+    }))
+  }
+
   return (
     <div className="app-shell">
       <header className="hero">
         <div className="hero__content">
           <p className="eyebrow">Score Tracer</p>
-          <h1>追蹤分數、整理圖表、輸出成可分享的視覺報告</h1>
+          <h1>Track every score and keep every record backed up to GitHub.</h1>
           <p className="hero__copy">
-            輸入每次分數與情緒後，系統會自動生成摘要、趨勢圖與 A4 圖像報告，方便後續在手機上快速查看與分享。
+            The app still supports local tracking, charts, and exports, and now it can also sync the full data set to a
+            JSON backup file in your GitHub repository.
           </p>
         </div>
       </header>
@@ -179,13 +301,25 @@ function App() {
         <section className="panel insights-panel">
           <div className="section-heading">
             <p className="eyebrow">Snapshot</p>
-            <h2>即時摘要</h2>
+            <h2>Summary and Backup</h2>
             <p className="section-copy">
-              先看整體紀錄數、平均分數與最新分數，再決定要輸出原始資料、單張圖表，或完整的 A4 圖像報告。
+              Review the current data, export files, import backups, and configure GitHub sync for both manual and
+              automatic backup.
             </p>
           </div>
           <SummaryCards summary={summary} />
-          <ExportPanel onExportImage={handleExportImage} records={records} onImport={handleImport} />
+          <ExportPanel
+            backupConfig={backupConfig}
+            backupStatusCommitUrl={backupStatus.commitUrl}
+            backupStatusMessage={backupStatus.message}
+            backupStatusTone={backupStatus.tone}
+            isBackingUp={isBackingUp}
+            onBackupConfigChange={handleBackupConfigChange}
+            onExportImage={handleExportImage}
+            onImport={handleImport}
+            onManualBackup={handleManualBackup}
+            records={records}
+          />
         </section>
 
         <ChartsSection

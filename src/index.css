@@ -226,6 +226,11 @@ button {
   background: rgba(255, 255, 255, 0.72);
 }
 
+.export-stack {
+  display: grid;
+  gap: 18px;
+}
+
 .export-block h3 {
   margin: 8px 0;
   font-size: 1.1rem;
@@ -266,6 +271,80 @@ button {
 
 .export-status {
   margin-top: 14px;
+}
+
+.field--compact input {
+  padding: 12px 14px;
+}
+
+.backup-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.backup-grid__full {
+  grid-column: 1 / -1;
+}
+
+.backup-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  color: var(--accent-dark);
+  font-weight: 700;
+}
+
+.backup-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+.backup-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.backup-badge--ready {
+  background: rgba(60, 157, 155, 0.14);
+  color: #176867;
+}
+
+.backup-badge--pending {
+  background: rgba(22, 50, 79, 0.08);
+  color: var(--muted);
+}
+
+.backup-status {
+  min-height: 24px;
+}
+
+.backup-status--working {
+  color: var(--accent-dark);
+}
+
+.backup-status--success {
+  color: #176867;
+}
+
+.backup-status--error {
+  color: var(--danger);
+}
+
+.backup-link {
+  margin-top: 8px;
+}
+
+.backup-link a {
+  color: var(--accent-dark);
+  font-weight: 700;
 }
 
 .summary-card {
@@ -549,7 +628,8 @@ button {
   }
 
   .summary-grid,
-  .charts-grid {
+  .charts-grid,
+  .backup-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -570,7 +650,8 @@ button {
 
   .summary-grid,
   .charts-grid,
-  .record-detail-grid {
+  .record-detail-grid,
+  .backup-grid {
     grid-template-columns: 1fr;
   }
 
