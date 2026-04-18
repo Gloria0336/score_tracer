@@ -1,8 +1,16 @@
 {
   "app": "score-tracer",
-  "committedAt": "2026-04-18T14:21:35.445Z",
-  "recordCount": 31,
+  "committedAt": "2026-04-18T14:21:52.583Z",
+  "recordCount": 32,
   "records": [
+    {
+      "id": "bd366e95-59e3-4e7b-9f73-bd63a49b45ff",
+      "createdAt": "2026-04-18T14:21:52.561Z",
+      "score": 6,
+      "emotion": 4,
+      "note": "下午發洩以後現在沒那麼想",
+      "recordedAt": "2026-04-18T14:21:00.000Z"
+    },
     {
       "id": "70e12bb6-57c4-42c1-858e-2b3dba32a798",
       "createdAt": "2026-04-18T14:21:18.928Z",
