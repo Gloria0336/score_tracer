@@ -1,15 +1,23 @@
 {
   "app": "score-tracer",
-  "committedAt": "2026-04-17T17:46:56.362Z",
-  "recordCount": 30,
+  "committedAt": "2026-04-18T14:21:18.964Z",
+  "recordCount": 31,
   "records": [
     {
+      "id": "70e12bb6-57c4-42c1-858e-2b3dba32a798",
+      "createdAt": "2026-04-18T14:21:18.928Z",
+      "score": 8,
+      "emotion": 4,
+      "note": "放假心情不錯",
+      "recordedAt": "2026-04-18T14:20:00.000Z"
+    },
+    {
       "id": "20e87636-adf3-4454-86c4-9eede3cf3f36",
-      "createdAt": "2026-04-17T17:46:56.320Z",
       "score": 7,
       "emotion": 3,
       "note": "臨時紀錄",
-      "recordedAt": "2026-04-17T17:46:00.000Z"
+      "recordedAt": "2026-04-17T17:46:00.000Z",
+      "createdAt": "2026-04-17T17:46:56.320Z"
     },
     {
       "id": "499ab115-a40c-400f-bc4f-ebce01fb72bb",
