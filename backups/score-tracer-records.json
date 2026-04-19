@@ -1,6 +1,6 @@
 {
   "app": "score-tracer",
-  "committedAt": "2026-04-19T16:35:12.390Z",
+  "committedAt": "2026-04-19T16:35:38.867Z",
   "recordCount": 33,
   "records": [
     {
@@ -9,7 +9,7 @@
       "score": 6,
       "emotion": 4,
       "note": "休息一整天",
-      "recordedAt": "2026-04-19T16:34:00.000Z"
+      "recordedAt": "2026-04-19T09:34:00.000Z"
     },
     {
       "id": "bd366e95-59e3-4e7b-9f73-bd63a49b45ff",
