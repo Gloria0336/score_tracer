@@ -1,23 +1,31 @@
 {
   "app": "score-tracer",
-  "committedAt": "2026-04-18T14:21:52.583Z",
-  "recordCount": 32,
+  "committedAt": "2026-04-19T16:35:12.390Z",
+  "recordCount": 33,
   "records": [
     {
+      "id": "d0bc2113-a6d8-46e2-a584-c547b64dd290",
+      "createdAt": "2026-04-19T16:35:12.346Z",
+      "score": 6,
+      "emotion": 4,
+      "note": "休息一整天",
+      "recordedAt": "2026-04-19T16:34:00.000Z"
+    },
+    {
       "id": "bd366e95-59e3-4e7b-9f73-bd63a49b45ff",
-      "createdAt": "2026-04-18T14:21:52.561Z",
       "score": 6,
       "emotion": 4,
       "note": "下午發洩以後現在沒那麼想",
-      "recordedAt": "2026-04-18T14:21:00.000Z"
+      "recordedAt": "2026-04-18T14:21:00.000Z",
+      "createdAt": "2026-04-18T14:21:52.561Z"
     },
     {
       "id": "70e12bb6-57c4-42c1-858e-2b3dba32a798",
-      "createdAt": "2026-04-18T14:21:18.928Z",
       "score": 8,
       "emotion": 4,
       "note": "放假心情不錯",
-      "recordedAt": "2026-04-18T09:20:00.000Z"
+      "recordedAt": "2026-04-18T09:20:00.000Z",
+      "createdAt": "2026-04-18T14:21:18.928Z"
     },
     {
       "id": "20e87636-adf3-4454-86c4-9eede3cf3f36",
