@@ -1,15 +1,23 @@
 {
   "app": "score-tracer",
-  "committedAt": "2026-04-20T07:05:27.004Z",
-  "recordCount": 35,
+  "committedAt": "2026-04-21T08:21:42.313Z",
+  "recordCount": 36,
   "records": [
     {
+      "id": "47ff90b3-e1ec-4e89-a365-effbdf23e7ed",
+      "createdAt": "2026-04-21T08:21:42.288Z",
+      "score": 7,
+      "emotion": 3,
+      "note": "突然想到",
+      "recordedAt": "2026-04-21T08:21:00.000Z"
+    },
+    {
       "id": "937950e0-c27b-479d-b4fa-40916f0518d0",
-      "createdAt": "2026-04-20T07:05:26.994Z",
       "score": 8,
       "emotion": 3,
       "note": "突然想到",
-      "recordedAt": "2026-04-20T07:05:00.000Z"
+      "recordedAt": "2026-04-20T07:05:00.000Z",
+      "createdAt": "2026-04-20T07:05:26.994Z"
     },
     {
       "id": "294df7d1-b5d3-462f-8559-ff7751662bf0",
