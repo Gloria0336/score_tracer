@@ -1,15 +1,23 @@
 {
   "app": "score-tracer",
-  "committedAt": "2026-04-22T14:57:37.452Z",
-  "recordCount": 39,
+  "committedAt": "2026-04-22T17:46:48.465Z",
+  "recordCount": 40,
   "records": [
     {
+      "id": "07a6bfa8-6230-4c91-99e9-53834fdc61df",
+      "createdAt": "2026-04-22T17:46:48.436Z",
+      "score": 7,
+      "emotion": 3,
+      "note": "定時",
+      "recordedAt": "2026-04-22T17:46:00.000Z"
+    },
+    {
       "id": "acf68bcb-cbea-4569-bd21-c7c400b7e622",
-      "createdAt": "2026-04-22T14:57:37.424Z",
       "score": 8,
       "emotion": 2,
       "note": "好想",
-      "recordedAt": "2026-04-22T14:57:00.000Z"
+      "recordedAt": "2026-04-22T14:57:00.000Z",
+      "createdAt": "2026-04-22T14:57:37.424Z"
     },
     {
       "id": "1674dc3c-cbbb-40f7-abb6-c4b540efe574",
