@@ -1,15 +1,23 @@
 {
   "app": "score-tracer",
-  "committedAt": "2026-04-24T01:32:04.654Z",
-  "recordCount": 42,
+  "committedAt": "2026-04-24T03:06:32.861Z",
+  "recordCount": 43,
   "records": [
     {
+      "id": "e65f85db-3954-42f6-9464-0116250f3203",
+      "createdAt": "2026-04-24T03:06:32.838Z",
+      "score": 9,
+      "emotion": 2,
+      "note": "情緒像是一團燃燒之後的殘骸",
+      "recordedAt": "2026-04-24T03:05:00.000Z"
+    },
+    {
       "id": "1578760f-29ec-43ce-a752-573736bad733",
-      "createdAt": "2026-04-24T01:32:04.602Z",
       "score": 7,
       "emotion": 3,
       "note": "紀錄",
-      "recordedAt": "2026-04-24T01:31:00.000Z"
+      "recordedAt": "2026-04-24T01:31:00.000Z",
+      "createdAt": "2026-04-24T01:32:04.602Z"
     },
     {
       "id": "792fbf84-3615-4dcd-8cb4-0082e8afeeed",
