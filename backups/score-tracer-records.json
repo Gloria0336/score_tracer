@@ -1,8 +1,16 @@
 {
   "app": "score-tracer",
-  "committedAt": "2026-04-26T13:31:57.544Z",
-  "recordCount": 44,
+  "committedAt": "2026-04-26T13:32:14.776Z",
+  "recordCount": 45,
   "records": [
+    {
+      "id": "331f704b-5d8d-48e2-963d-7d5797a82f10",
+      "createdAt": "2026-04-26T13:32:14.749Z",
+      "score": 6,
+      "emotion": 3,
+      "note": "晚上要變了",
+      "recordedAt": "2026-04-26T13:31:00.000Z"
+    },
     {
       "id": "149c9df2-eacf-4cfb-9b86-925845ceaf81",
       "createdAt": "2026-04-26T13:31:16.930Z",
