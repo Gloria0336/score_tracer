@@ -1,6 +1,6 @@
 {
   "app": "score-tracer",
-  "committedAt": "2026-04-26T13:31:16.975Z",
+  "committedAt": "2026-04-26T13:31:57.544Z",
   "recordCount": 44,
   "records": [
     {
@@ -9,7 +9,7 @@
       "score": 4,
       "emotion": 4,
       "note": "跟朋友見面",
-      "recordedAt": "2026-04-26T13:28:00.000Z"
+      "recordedAt": "2026-04-26T06:28:00.000Z"
     },
     {
       "id": "e65f85db-3954-42f6-9464-0116250f3203",
