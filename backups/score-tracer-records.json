@@ -1,23 +1,31 @@
 {
   "app": "score-tracer",
-  "committedAt": "2026-04-26T13:32:14.776Z",
-  "recordCount": 45,
+  "committedAt": "2026-04-27T03:09:47.308Z",
+  "recordCount": 46,
   "records": [
     {
+      "id": "5bc233b8-5c13-4b96-ba64-aa00caa1c69d",
+      "createdAt": "2026-04-27T03:09:47.280Z",
+      "score": 7,
+      "emotion": 3,
+      "note": "",
+      "recordedAt": "2026-04-27T03:09:00.000Z"
+    },
+    {
       "id": "331f704b-5d8d-48e2-963d-7d5797a82f10",
-      "createdAt": "2026-04-26T13:32:14.749Z",
       "score": 6,
       "emotion": 3,
       "note": "晚上要變了",
-      "recordedAt": "2026-04-26T13:31:00.000Z"
+      "recordedAt": "2026-04-26T13:31:00.000Z",
+      "createdAt": "2026-04-26T13:32:14.749Z"
     },
     {
       "id": "149c9df2-eacf-4cfb-9b86-925845ceaf81",
-      "createdAt": "2026-04-26T13:31:16.930Z",
       "score": 4,
       "emotion": 4,
       "note": "跟朋友見面",
-      "recordedAt": "2026-04-26T06:28:00.000Z"
+      "recordedAt": "2026-04-26T06:28:00.000Z",
+      "createdAt": "2026-04-26T13:31:16.930Z"
     },
     {
       "id": "e65f85db-3954-42f6-9464-0116250f3203",
